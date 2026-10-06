@@ -54,7 +54,7 @@ M.forced_input = nil
 -- 一段數字（可含小數點）看起來是數字：至少 2 碼，且拼不成注音（如 2026、3.14），
 -- 或由候選判斷出「轉成中文也不成詞」（如 100＝ㄅㄢ ㄢ，見 filter 的 forced_input）
 function M.looks_number(run, input)
-  return #run >= 2 and (not zhuyin_possible(run) or input == M.forced_input)
+  return #run >= 2 and (not zhuyin_possible(run) or (input ~= nil and input == M.forced_input))
 end
 
 -- 回傳 prefix, run, is_number；結尾不是英文也不是數字則回傳 nil
