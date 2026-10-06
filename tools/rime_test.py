@@ -2,6 +2,9 @@
 
 用法：python rime_test.py "hello " "su3hello " "ru " "ru{Return}"
 會把使用者資料夾複製到暫存目錄測試，不影響正在使用的輸入法。
+
+      python rime_test.py --build "hello " "su3cl3 "
+改測剛編譯好的 output/（不必先安裝），並以空的使用者資料夾模擬全新安裝。
 """
 import ctypes as C
 import os
@@ -10,8 +13,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-RIME_DIR = max(Path(r'C:/Program Files/Rime').glob('weasel-*'))  # 目前安裝的版本
+RIME_DIR = None  # None＝目前安裝的版本（main 執行時才尋找）
 USER_DIR = Path(os.environ['APPDATA']) / 'Rime'
+BUILD_DIR = Path(__file__).resolve().parent.parent / 'output'  # --build 測試的編譯產出
 
 
 class Traits(C.Structure):
@@ -57,16 +61,21 @@ def show_context(rime, sid):
     return f'組字區 {pre!r} 候選 {cands}'
 
 
-def main(cases):
+def main(cases, build=False):
     work = Path(tempfile.mkdtemp(prefix='fengyu_test_'))
     user = work / 'user'
-    skip = ['*.userdb'] + (['*.gram'] if os.environ.get('FENGYU_NO_GRAMMAR') else [])  # 比較有無語言模型
-    shutil.copytree(USER_DIR, user, ignore=shutil.ignore_patterns(*skip))
-    os.add_dll_directory(str(RIME_DIR))
-    rime = C.CDLL(str(RIME_DIR / 'rime.dll'))
+    if build:
+        rime_dir = BUILD_DIR
+        user.mkdir()  # 空的使用者資料夾＝全新安裝
+    else:
+        rime_dir = RIME_DIR or max(Path(r'C:/Program Files/Rime').glob('weasel-*'))
+        skip = ['*.userdb'] + (['*.gram'] if os.environ.get('FENGYU_NO_GRAMMAR') else [])  # 比較有無語言模型
+        shutil.copytree(USER_DIR, user, ignore=shutil.ignore_patterns(*skip))
+    os.add_dll_directory(str(rime_dir))
+    rime = C.CDLL(str(rime_dir / 'rime.dll'))
     t = Traits()
     t.data_size = C.sizeof(Traits) - C.sizeof(C.c_int)
-    t.shared_data_dir = str(RIME_DIR / 'data').encode()
+    t.shared_data_dir = str(rime_dir / 'data').encode()
     t.user_data_dir = str(user).encode()
     t.distribution_name = b'fengyu-test'
     t.distribution_code_name = b'Weasel'
@@ -99,4 +108,6 @@ def main(cases):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    args = sys.argv[1:]
+    build = bool(args) and args[0] == '--build'
+    main(args[1:] if build else args, build=build)
