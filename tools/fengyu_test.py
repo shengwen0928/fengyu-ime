@@ -8,6 +8,7 @@
 """
 import ctypes as C
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -58,7 +59,8 @@ def show_context(engine, sid):
     pre = (ctx.composition.preedit or b'').decode()
     cands = [ctx.menu.candidates[i].text.decode() for i in range(min(ctx.menu.num_candidates, 5))]
     engine.RimeFreeContext(C.byref(ctx))
-    return f'組字區 {pre!r} 候選 {cands}'
+    shown = cands and not engine.RimeGetOption(C.c_size_t(sid), b'fengyu_hide_menu')
+    return f'組字區 {pre!r} 候選 {cands}' + (' [候選框顯示]' if shown else '')
 
 
 def main(cases, build=False):
@@ -90,15 +92,17 @@ def main(cases, build=False):
     engine.RimeCreateSession.restype = C.c_size_t
     for case in cases:
         sid = engine.RimeCreateSession()
-        seq = case.replace(' ', '{space}')
-        engine.RimeSimulateKeySequence(C.c_size_t(sid), seq.encode())
-        c = Commit()
-        c.data_size = C.sizeof(Commit) - C.sizeof(C.c_int)
+        # 逐鍵送出，每鍵後讀取候選（同真正的輸入法：Lua filter 在讀候選時才執行）
         out = ''
-        if engine.RimeGetCommit(C.c_size_t(sid), C.byref(c)):
-            out = c.text.decode()
-            engine.RimeFreeCommit(C.byref(c))
-        print(f'{case!r:24} → 送出 {out!r:14} {show_context(engine, sid)}')
+        for token in re.findall(r'\{[^}]+\}|.', case.replace(' ', '{space}')):
+            engine.RimeSimulateKeySequence(C.c_size_t(sid), token.encode())
+            c = Commit()
+            c.data_size = C.sizeof(Commit) - C.sizeof(C.c_int)
+            if engine.RimeGetCommit(C.c_size_t(sid), C.byref(c)):
+                out += c.text.decode()
+                engine.RimeFreeCommit(C.byref(c))
+            ctx = show_context(engine, sid)
+        print(f'{case!r:24} → 送出 {out!r:14} {ctx}')
         engine.RimeDestroySession(C.c_size_t(sid))
     engine.RimeFinalize()
     errs = [p for p in work.glob('*.ERROR*')] + [p for p in work.glob('*.WARNING*')]
