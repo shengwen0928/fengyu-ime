@@ -240,12 +240,17 @@ uninst:
   ; Backup data directory from previous installation, user files may exist
   ReadRegStr $R1 HKLM SOFTWARE\Fengyu\IME "FengyuRoot"
   StrCmp $R1 "" call_uninstaller
+  ; the updater (SYSTEM, session 0) skips this backup: shell copy UI there has
+  ; no desktop and can block the install for minutes
+  StrCmp $UpdateMode "1" call_uninstaller
   IfFileExists $R1\data\*.* 0 call_uninstaller
   CreateDirectory $TEMP\fengyu-backup
-  CopyFiles $R1\data\*.* $TEMP\fengyu-backup
+  CopyFiles /SILENT $R1\data\*.* $TEMP\fengyu-backup
 
 call_uninstaller:
   ExecWait '"$R1\FengyuServer.exe" /quit'
+  ; the updater keeps the IME registration (FengyuSetup /update replaces files only)
+  StrCmp $UpdateMode "1" +2
   ExecWait '"$R1\FengyuSetup.exe" /u'
   ; Remove registry keys
   DeleteRegKey HKLM SOFTWARE\Fengyu
@@ -306,7 +311,7 @@ Section "Fengyu"
 
   IfFileExists $TEMP\fengyu-backup\*.* 0 program_files
   CreateDirectory $INSTDIR\data
-  CopyFiles $TEMP\fengyu-backup\*.* $INSTDIR\data
+  CopyFiles /SILENT $TEMP\fengyu-backup\*.* $INSTDIR\data
   RMDir /r $TEMP\fengyu-backup
 
 program_files:
@@ -394,6 +399,10 @@ program_files:
   ${GetOptions} $R0 "/T" $R1
   IfErrors +2 0
   StrCpy $R2 "/t"
+  ; background update (SYSTEM, session 0): re-registering there fails, so only
+  ; replace files and keep the registration from the first install
+  StrCmp $UpdateMode "1" 0 +2
+  StrCpy $R2 "/update"
 
   ExecWait '"$INSTDIR\FengyuSetup.exe" $R2'
 

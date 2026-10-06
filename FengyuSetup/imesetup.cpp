@@ -620,6 +620,49 @@ int install(bool hant, bool silent, bool old_ime_support) {
   return 0;
 }
 
+// used by update(): keep the existing registration untouched
+static int keep_registration(const std::wstring&, bool, bool, bool, bool, bool) {
+  return 0;
+}
+
+// Background update: only replace the copies in the system directories and
+// point FengyuRoot at the new version. The CLSID and the system file paths are
+// the same in every version, so the registration made by the first install
+// stays valid. (Re-registering from the updater, which runs as SYSTEM in
+// session 0, fails and rolls the whole registration back.)
+int update(bool silent) {
+  std::wstring ime_src_path;
+  int retval = install_ime_file(ime_src_path, L".dll", true, silent,
+                                &keep_registration);
+  WCHAR sys[MAX_PATH];
+  GetSystemDirectoryW(sys, _countof(sys));
+  if (GetFileAttributesW((std::wstring(sys) + L"\\fengyu.ime").c_str()) !=
+      INVALID_FILE_ATTRIBUTES) {
+    std::wstring ime_path;
+    retval += install_ime_file(ime_path, L".ime", true, silent,
+                               &keep_registration);
+  }
+  if (retval)
+    return 1;
+
+  WCHAR drive[_MAX_DRIVE];
+  WCHAR dir[_MAX_DIR];
+  _wsplitpath_s(ime_src_path.c_str(), drive, _countof(drive), dir,
+                _countof(dir), NULL, 0, NULL, 0);
+  std::wstring rootDir = std::wstring(drive) + dir;
+  rootDir.pop_back();
+  if (FAILED(HRESULT_FROM_WIN32(SetRegKeyValue(HKEY_LOCAL_MACHINE,
+                                               FENGYU_REG_KEY, L"FengyuRoot",
+                                               rootDir.c_str(), REG_SZ))))
+    return 1;
+  const std::wstring executable = L"FengyuServer.exe";
+  if (FAILED(HRESULT_FROM_WIN32(
+          SetRegKeyValue(HKEY_LOCAL_MACHINE, FENGYU_REG_KEY,
+                         L"ServerExecutable", executable.c_str(), REG_SZ))))
+    return 1;
+  return 0;
+}
+
 int uninstall(bool silent) {
   // 注销输入法
   int retval = 0;

@@ -42,6 +42,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance,
   return nRet;
 }
 int install(bool hant, bool silent, bool old_ime_support);
+int update(bool silent);
 int uninstall(bool silent);
 bool has_installed();
 
@@ -233,6 +234,10 @@ static int Run(LPTSTR lpCmdLine) {
   if (!IsProcAdmin()) {
     return RestartAsAdmin(lpCmdLine);
   }
+
+  // background update: replace system files, keep the existing registration
+  if (!wcscmp(L"/update", lpCmdLine))
+    return update(silent);
 
   bool hans = !wcscmp(L"/s", lpCmdLine);
   if (hans)
