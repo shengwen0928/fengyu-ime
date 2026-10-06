@@ -112,6 +112,72 @@ LangString AUTOCHKUPDATE ${LANG_ENGLISH} "Automatically check for updates?"
 
 ;--------------------------------
 
+; Remove an old Fengyu IME release that still used the upstream Weasel/Rime
+; names (installed under Program Files\Rime), then copy its user data
+; (learned words and UI settings) from %APPDATA%\Rime to %APPDATA%\Fengyu.
+; Only acts when the old entry was published by us, so a genuine upstream
+; installation is never touched.
+Function RemoveLegacyFengyu
+  ReadRegStr $R2 HKLM \
+  "Software\Microsoft\Windows\CurrentVersion\Uninstall\Weasel" "Publisher"
+  StrCmp $R2 "AIW 風光Ai窗" 0 legacy_done
+  ReadRegStr $R3 HKLM "SOFTWARE\Rime\Weasel" "WeaselRoot"
+  StrCmp $R3 "" legacy_done
+
+  IfSilent legacy_remove 0
+  MessageBox MB_OKCANCEL|MB_ICONINFORMATION "$(CONFIRMATION)" IDOK legacy_remove
+  Abort
+
+legacy_remove:
+  ExecWait '"$R3\WeaselServer.exe" /quit'
+  ExecWait '"$R3\WeaselSetup.exe" /u'
+  DeleteRegKey HKLM "SOFTWARE\Rime\Weasel"
+  DeleteRegKey /ifempty HKLM "SOFTWARE\Rime"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Weasel"
+  ${If} ${IsNativeARM64}
+    SetRegView 64
+  ${ElseIf} ${IsNativeAMD64}
+    SetRegView 64
+  ${Endif}
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "WeaselServer"
+  SetRegView 32
+  Delete /REBOOTOK "$R3\data\opencc\*.*"
+  Delete /REBOOTOK "$R3\data\preview\*.*"
+  Delete /REBOOTOK "$R3\data\lua\*.*"
+  Delete /REBOOTOK "$R3\data\*.*"
+  Delete /REBOOTOK "$R3\Win32\*.*"
+  Delete /REBOOTOK "$R3\*.*"
+  RMDir /REBOOTOK "$R3\data\opencc"
+  RMDir /REBOOTOK "$R3\data\preview"
+  RMDir /REBOOTOK "$R3\data\lua"
+  RMDir /REBOOTOK "$R3\data"
+  RMDir /REBOOTOK "$R3\Win32"
+  RMDir /REBOOTOK "$R3"
+  RMDir "$R3\.."
+  SetShellVarContext all
+  Delete "$SMPROGRAMS\$(DISPLAYNAME)\*.*"
+  RMDir "$SMPROGRAMS\$(DISPLAYNAME)"
+
+  ; per-user settings and data of the old release
+  SetShellVarContext current
+  DeleteRegKey HKCU "Software\Rime\Weasel"
+  DeleteRegKey /ifempty HKCU "Software\Rime"
+  IfFileExists "$APPDATA\Fengyu\*.*" legacy_reboot
+  IfFileExists "$APPDATA\Rime\fengyu.userdb\*.*" 0 legacy_reboot
+  CreateDirectory "$APPDATA\Fengyu"
+  CopyFiles /SILENT "$APPDATA\Rime\*.userdb" "$APPDATA\Fengyu"
+  CopyFiles /SILENT "$APPDATA\Rime\default.custom.yaml" "$APPDATA\Fengyu"
+  CopyFiles /SILENT "$APPDATA\Rime\user.yaml" "$APPDATA\Fengyu"
+  CopyFiles /SILENT "$APPDATA\Rime\weasel.custom.yaml" "$APPDATA\Fengyu\fengyu.custom.yaml"
+
+legacy_reboot:
+  SetShellVarContext all
+  SetRebootFlag true
+  Sleep 800
+
+legacy_done:
+FunctionEnd
+
 Function .onInit
   ; if not version >= 8.1, quit and MessageBox(if not silent)
   ${IfNot} ${AtLeastWin8.1}
@@ -120,6 +186,8 @@ Function .onInit
 toquit:
     Quit
   ${EndIf}
+
+  Call RemoveLegacyFengyu
 
   ReadRegStr $R0 HKLM "Software\Fengyu\IME" "InstallDir"
   StrCmp $R0 "" 0 skip
