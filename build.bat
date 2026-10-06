@@ -223,10 +223,10 @@ if %build_arm64% == 1 (
 
 if %build_installer% == 1 (
   rem bundle fengyu schema, dictionary and lua scripts
-  copy /Y %FENGYU_ROOT%\rime\*.yaml output\data\
+  copy /Y %FENGYU_ROOT%\schema\*.yaml output\data\
   if errorlevel 1 goto error
   if not exist output\data\lua mkdir output\data\lua
-  copy /Y %FENGYU_ROOT%\rime\lua\*.lua output\data\lua\
+  copy /Y %FENGYU_ROOT%\schema\lua\*.lua output\data\lua\
   if errorlevel 1 goto error
   rem language model for sentence prediction (lotem/rime-octagram-data, hant)
   if not exist %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram (
@@ -301,7 +301,6 @@ rem build boost
 rem ---------------------------------------------------------------------------
 :build_data
   copy %FENGYU_ROOT%\README.md output\README.txt
-  copy %FENGYU_ROOT%\plum\rime-install.bat output\
   set plum_dir=plum
   set rime_dir=output/data
   set WSLENV=plum_dir:rime_dir

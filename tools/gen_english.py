@@ -1,17 +1,17 @@
-"""風語輸入法 — 產生中英混打用的英文詞表（rime/lua/fengyu_english.lua）。
+"""風語輸入法 — 產生中英混打用的英文詞表（schema/lua/fengyu_english.lua）。
 
 用法：python gen_english.py
 - 英文詞來源：tools/english-10000.txt（google-10000-english, no swears）
-- 撞鍵判斷：用 RIME zhuyin.yaml 相同的規則，把 terra_pinyin 的一聲音節轉成大千鍵位；
+- 撞鍵判斷：用 zhuyin.yaml 相同的規則，把 terra_pinyin 的一聲音節轉成大千鍵位；
   若英文字的按鍵剛好等於某個一聲注音音節，則標為 conflict（空白鍵維持注音一聲，Enter 才送英文）。
 """
 import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-RIME_DIR = max(Path(r'C:/Program Files/Fengyu').glob('fengyu-*'))  # 目前安裝的版本
-RIME_DATA = RIME_DIR / 'data'
-OUT = HERE.parent / 'rime' / 'lua' / 'fengyu_english.lua'
+INSTALL_DIR = max(Path(r'C:/Program Files/Fengyu').glob('fengyu-*'))  # 目前安裝的版本
+INSTALL_DATA = INSTALL_DIR / 'data'
+OUT = HERE.parent / 'schema' / 'lua' / 'fengyu_english.lua'
 
 # 與 zhuyin.yaml pinyin_to_zhuyin 相同
 PINYIN_TO_ZHUYIN = [
@@ -33,7 +33,7 @@ def to_keys(pinyin):
 
 def syllables():
     """回傳（一聲音節按鍵集合, 所有音節去聲調後的按鍵集合）"""
-    text = (RIME_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8')
+    text = (INSTALL_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8')
     body = text.split('\n...\n', 1)[1]
     tone1, bases = set(), set()
     for line in body.splitlines():

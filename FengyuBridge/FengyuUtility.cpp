@@ -13,7 +13,7 @@ fs::path FengyuUserDataPath() {
     DWORD type = 0;
     DWORD data = 0;
     ret =
-        RegQueryValueEx(hKey, L"RimeUserDir", NULL, &type, (LPBYTE)_path, &len);
+        RegQueryValueEx(hKey, L"UserDir", NULL, &type, (LPBYTE)_path, &len);
     RegCloseKey(hKey);
     if (ret == ERROR_SUCCESS && type == REG_SZ && _path[0]) {
       return fs::path(_path);

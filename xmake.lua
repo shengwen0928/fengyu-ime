@@ -48,7 +48,7 @@ add_links("atls", "shell32", "advapi32", "gdi32", "user32", "uuid", "ole32")
 includes("FengyuIPC", "FengyuUI", "FengyuTSF", "FengyuIME")
 
 if is_arch("x64") or is_arch("x86") then
-  includes("RimeWithFengyu", "FengyuIPCServer", "FengyuServer", "FengyuDeployer")
+  includes("FengyuBridge", "FengyuIPCServer", "FengyuServer", "FengyuDeployer")
 end
 
 if is_arch("x86") then

@@ -197,7 +197,7 @@
     <ClInclude Include="FengyuDeployer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\RimeWithFengyu\FengyuUtility.cpp" />
+    <ClCompile Include="..\FengyuBridge\FengyuUtility.cpp" />
     <ClCompile Include="Configurator.cpp" />
     <ClCompile Include="DictManagementDialog.cpp" />
     <ClCompile Include="stdafx.cpp">

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-FENGYU_SOURCE_PATH="RimeWithFengyu FengyuDeployer FengyuIME FengyuIPC FengyuIPCServer FengyuServer FengyuSetup FengyuTSF FengyuUI include test"
+FENGYU_SOURCE_PATH="FengyuBridge FengyuDeployer FengyuIME FengyuIPC FengyuIPCServer FengyuServer FengyuSetup FengyuTSF FengyuUI include test"
 
 # clang format options
 method="-i"

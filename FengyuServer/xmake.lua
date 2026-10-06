@@ -3,7 +3,7 @@ target("FengyuServer")
   add_files("./*.cpp")
   add_rules("add_rcfiles", "subwin")
   add_links("imm32", "kernel32", "rime")
-  add_deps("FengyuUI", "FengyuIPC", "RimeWithFengyu", "FengyuIPCServer")
+  add_deps("FengyuUI", "FengyuIPC", "FengyuBridge", "FengyuIPCServer")
 
   add_files("$(projectdir)/PerMonitorHighDPIAware.manifest")
   add_ldflags("/DEBUG /OPT:REF /OPT:ICF /LARGEADDRESSAWARE /ERRORREPORT:QUEUE")

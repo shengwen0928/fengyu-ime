@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include <FengyuIPC.h>
-#include <RimeWithFengyu.h>
+#include <FengyuBridge.h>
 
 #include <boost/interprocess/streams/bufferstream.hpp>
 using namespace boost::interprocess;
@@ -169,7 +169,7 @@ int server_main() {
   fengyu::Server server;
   // fengyu::UI ui;
   // const std::unique_ptr<fengyu::RequestHandler> handler(new
-  // RimeWithFengyuHandler(&ui));
+  // FengyuBridgeHandler(&ui));
   const std::unique_ptr<fengyu::RequestHandler> handler(new TestRequestHandler);
 
   server.SetRequestHandler(handler.get());

@@ -32,10 +32,10 @@ struct SessionStatus {
 };
 typedef std::map<DWORD, SessionStatus> SessionStatusMap;
 typedef DWORD FengyuSessionId;
-class RimeWithFengyuHandler : public fengyu::RequestHandler {
+class FengyuBridgeHandler : public fengyu::RequestHandler {
  public:
-  RimeWithFengyuHandler(fengyu::UI* ui);
-  virtual ~RimeWithFengyuHandler();
+  FengyuBridgeHandler(fengyu::UI* ui);
+  virtual ~FengyuBridgeHandler();
   virtual void Initialize();
   virtual void Finalize();
   virtual DWORD FindSession(FengyuSessionId ipc_id);

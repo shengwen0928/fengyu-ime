@@ -65,7 +65,7 @@
     <ClCompile Include="DictManagementDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\RimeWithFengyu\FengyuUtility.cpp">
+    <ClCompile Include="..\FengyuBridge\FengyuUtility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

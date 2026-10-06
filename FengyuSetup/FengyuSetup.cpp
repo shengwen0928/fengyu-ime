@@ -69,7 +69,7 @@ static int CustomInstall(bool installing) {
     DWORD type = 0;
     DWORD data = 0;
     ret =
-        RegQueryValueEx(hKey, L"RimeUserDir", NULL, &type, (LPBYTE)value, &len);
+        RegQueryValueEx(hKey, L"UserDir", NULL, &type, (LPBYTE)value, &len);
     if (ret == ERROR_SUCCESS && type == REG_SZ) {
       user_dir = value;
     }
@@ -108,7 +108,7 @@ static int CustomInstall(bool installing) {
     ExpandEnvironmentStringsW(FENGYU_DEFAULT_USER_DIR, _path, _countof(_path));
     user_dir = std::wstring(_path);
   }
-  ret = SetRegKeyValue(HKEY_CURRENT_USER, KEY, L"RimeUserDir", user_dir.c_str(),
+  ret = SetRegKeyValue(HKEY_CURRENT_USER, KEY, L"UserDir", user_dir.c_str(),
                        REG_SZ, false);
   if (FAILED(HRESULT_FROM_WIN32(ret))) {
     MSG_BY_IDS(IDS_STR_ERR_WRITE_USER_DIR, IDS_STR_INSTALL_FAILED,
@@ -190,7 +190,7 @@ static int Run(LPTSTR lpCmdLine) {
 
   if (auto res = GetParamByPrefix(lpCmdLine, L"/userdir:")) {
     return SetRegKeyValue(HKEY_CURRENT_USER, FENGYU_REG_KEY,
-                          L"RimeUserDir", res, REG_SZ);
+                          L"UserDir", res, REG_SZ);
   }
 
   if (!wcscmp(L"/ls", lpCmdLine)) {

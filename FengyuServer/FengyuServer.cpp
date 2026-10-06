@@ -7,7 +7,7 @@
 #include "FengyuService.h"
 #include <FengyuIPC.h>
 #include <FengyuUI.h>
-#include <RimeWithFengyu.h>
+#include <FengyuBridge.h>
 #include <FengyuUtility.h>
 #include <winsparkle.h>
 #include <functional>

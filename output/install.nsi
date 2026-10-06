@@ -227,12 +227,6 @@ Section "Fengyu"
 
 program_files:
   File "README.txt"
-  File "7z.dll"
-  File "7z.exe"
-  File "curl.exe"
-  File "curl-ca-bundle.crt"
-  File "rime-install.bat"
-  File "rime-install-config.bat"
   File "start_service.bat"
   File "stop_service.bat"
   File "fengyu.dll"

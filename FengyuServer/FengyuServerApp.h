@@ -4,7 +4,7 @@
 #include <resource.h>
 #include <FengyuIPC.h>
 #include <FengyuUI.h>
-#include <RimeWithFengyu.h>
+#include <FengyuBridge.h>
 #include <FengyuUtility.h>
 #include <filesystem>
 #include <functional>
@@ -57,5 +57,5 @@ class FengyuServerApp {
   fengyu::Server m_server;
   fengyu::UI m_ui;
   FengyuTrayIcon tray_icon;
-  std::unique_ptr<RimeWithFengyuHandler> m_handler;
+  std::unique_ptr<FengyuBridgeHandler> m_handler;
 };

@@ -1,6 +1,6 @@
 ﻿#include "stdafx.h"
 #include <logging.h>
-#include <RimeWithFengyu.h>
+#include <FengyuBridge.h>
 #include <StringAlgorithm.hpp>
 #include <FengyuConstants.h>
 #include <FengyuUtility.h>
@@ -46,7 +46,7 @@ static void CleanOldLogs() {
   time_t now = time(NULL);
   strftime(ymd, sizeof(ymd), ".%Y%m%d", localtime(&now));
   std::string today(ymd);
-  const std::string app_name = "rime.fengyu";
+  const std::string app_name = "fengyu-ime";
   std::string dir = FengyuLogPath().string();
   if (!fs::exists(fs::path(dir)))
     return;
@@ -75,7 +75,7 @@ static void CleanOldLogs() {
   }
 }
 
-RimeWithFengyuHandler::RimeWithFengyuHandler(UI* ui)
+FengyuBridgeHandler::FengyuBridgeHandler(UI* ui)
     : m_ui(ui),
       m_active_session(0),
       m_disabled(true),
@@ -97,7 +97,7 @@ RimeWithFengyuHandler::RimeWithFengyuHandler(UI* ui)
   _Setup();
 }
 
-RimeWithFengyuHandler::~RimeWithFengyuHandler() {
+FengyuBridgeHandler::~FengyuBridgeHandler() {
   m_show_notifications.clear();
   m_session_status_map.clear();
   m_app_options.clear();
@@ -126,7 +126,7 @@ void _RefreshTrayIcon(const RimeSessionId session_id,
     _UpdateUICallback();
 }
 
-void RimeWithFengyuHandler::_Setup() {
+void FengyuBridgeHandler::_Setup() {
   RIME_STRUCT(RimeTraits, fengyu_traits);
   std::string shared_dir = wtou8(FengyuSharedDataPath().wstring());
   std::string user_dir = wtou8(FengyuUserDataPath().wstring());
@@ -137,20 +137,20 @@ void RimeWithFengyuHandler::_Setup() {
   fengyu_traits.distribution_name = distribution_name.c_str();
   fengyu_traits.distribution_code_name = FENGYU_CODE_NAME;
   fengyu_traits.distribution_version = FENGYU_VERSION;
-  fengyu_traits.app_name = "rime.fengyu";
+  fengyu_traits.app_name = "fengyu-ime";
   std::string log_dir = FengyuLogPath().u8string();
   fengyu_traits.log_dir = log_dir.c_str();
   rime_api->setup(&fengyu_traits);
-  rime_api->set_notification_handler(&RimeWithFengyuHandler::OnNotify, this);
+  rime_api->set_notification_handler(&FengyuBridgeHandler::OnNotify, this);
 }
 
-void RimeWithFengyuHandler::Initialize() {
+void FengyuBridgeHandler::Initialize() {
   m_disabled = _IsDeployerRunning();
   if (m_disabled) {
     return;
   }
 
-  LOG(INFO) << "Initializing la rime.";
+  LOG(INFO) << "Initializing Fengyu engine.";
   rime_api->initialize(NULL);
 #if 0
   if (rime_api->start_maintenance(/*full_check = */ False)) {
@@ -188,15 +188,15 @@ void RimeWithFengyuHandler::Initialize() {
   m_last_schema_id.clear();
 }
 
-void RimeWithFengyuHandler::Finalize() {
+void FengyuBridgeHandler::Finalize() {
   m_active_session = 0;
   m_disabled = true;
   m_session_status_map.clear();
-  LOG(INFO) << "Finalizing la rime.";
+  LOG(INFO) << "Finalizing Fengyu engine.";
   rime_api->finalize();
 }
 
-DWORD RimeWithFengyuHandler::FindSession(FengyuSessionId ipc_id) {
+DWORD FengyuBridgeHandler::FindSession(FengyuSessionId ipc_id) {
   if (m_disabled)
     return 0;
   Bool found = rime_api->find_session(to_session_id(ipc_id));
@@ -205,7 +205,7 @@ DWORD RimeWithFengyuHandler::FindSession(FengyuSessionId ipc_id) {
   return found ? (ipc_id) : 0;
 }
 
-DWORD RimeWithFengyuHandler::AddSession(LPWSTR buffer, EatLine eat) {
+DWORD FengyuBridgeHandler::AddSession(LPWSTR buffer, EatLine eat) {
   if (m_disabled) {
     DLOG(INFO) << "Trying to resume service.";
     EndMaintenance();
@@ -256,7 +256,7 @@ DWORD RimeWithFengyuHandler::AddSession(LPWSTR buffer, EatLine eat) {
   return ipc_id;
 }
 
-DWORD RimeWithFengyuHandler::RemoveSession(FengyuSessionId ipc_id) {
+DWORD FengyuBridgeHandler::RemoveSession(FengyuSessionId ipc_id) {
   if (m_ui)
     m_ui->Hide();
   if (m_disabled)
@@ -269,7 +269,7 @@ DWORD RimeWithFengyuHandler::RemoveSession(FengyuSessionId ipc_id) {
   return 0;
 }
 
-void RimeWithFengyuHandler::UpdateColorTheme(BOOL darkMode) {
+void FengyuBridgeHandler::UpdateColorTheme(BOOL darkMode) {
   RimeConfig config = {NULL};
   if (rime_api->config_open("fengyu", &config)) {
     if (m_ui) {
@@ -303,7 +303,7 @@ void RimeWithFengyuHandler::UpdateColorTheme(BOOL darkMode) {
   m_ui->style() = get_session_status(m_active_session).style;
 }
 
-BOOL RimeWithFengyuHandler::ProcessKeyEvent(KeyEvent keyEvent,
+BOOL FengyuBridgeHandler::ProcessKeyEvent(KeyEvent keyEvent,
                                             FengyuSessionId ipc_id,
                                             EatLine eat) {
   DLOG(INFO) << "Process key event: keycode = " << keyEvent.keycode
@@ -333,7 +333,7 @@ BOOL RimeWithFengyuHandler::ProcessKeyEvent(KeyEvent keyEvent,
   return (BOOL)handled;
 }
 
-void RimeWithFengyuHandler::CommitComposition(FengyuSessionId ipc_id) {
+void FengyuBridgeHandler::CommitComposition(FengyuSessionId ipc_id) {
   DLOG(INFO) << "Commit composition: ipc_id = " << ipc_id;
   if (m_disabled)
     return;
@@ -342,7 +342,7 @@ void RimeWithFengyuHandler::CommitComposition(FengyuSessionId ipc_id) {
   m_active_session = ipc_id;
 }
 
-void RimeWithFengyuHandler::ClearComposition(FengyuSessionId ipc_id) {
+void FengyuBridgeHandler::ClearComposition(FengyuSessionId ipc_id) {
   DLOG(INFO) << "Clear composition: ipc_id = " << ipc_id;
   if (m_disabled)
     return;
@@ -351,7 +351,7 @@ void RimeWithFengyuHandler::ClearComposition(FengyuSessionId ipc_id) {
   m_active_session = ipc_id;
 }
 
-void RimeWithFengyuHandler::SelectCandidateOnCurrentPage(
+void FengyuBridgeHandler::SelectCandidateOnCurrentPage(
     size_t index,
     FengyuSessionId ipc_id) {
   DLOG(INFO) << "select candidate on current page, ipc_id = " << ipc_id
@@ -361,7 +361,7 @@ void RimeWithFengyuHandler::SelectCandidateOnCurrentPage(
   rime_api->select_candidate_on_current_page(to_session_id(ipc_id), index);
 }
 
-bool RimeWithFengyuHandler::HighlightCandidateOnCurrentPage(
+bool FengyuBridgeHandler::HighlightCandidateOnCurrentPage(
     size_t index,
     FengyuSessionId ipc_id,
     EatLine eat) {
@@ -374,7 +374,7 @@ bool RimeWithFengyuHandler::HighlightCandidateOnCurrentPage(
   return res;
 }
 
-bool RimeWithFengyuHandler::ChangePage(bool backward,
+bool FengyuBridgeHandler::ChangePage(bool backward,
                                        FengyuSessionId ipc_id,
                                        EatLine eat) {
   DLOG(INFO) << "change page, ipc_id = " << ipc_id
@@ -385,7 +385,7 @@ bool RimeWithFengyuHandler::ChangePage(bool backward,
   return res;
 }
 
-void RimeWithFengyuHandler::FocusIn(DWORD client_caps, FengyuSessionId ipc_id) {
+void FengyuBridgeHandler::FocusIn(DWORD client_caps, FengyuSessionId ipc_id) {
   DLOG(INFO) << "Focus in: ipc_id = " << ipc_id
              << ", client_caps = " << client_caps;
   if (m_disabled)
@@ -394,14 +394,14 @@ void RimeWithFengyuHandler::FocusIn(DWORD client_caps, FengyuSessionId ipc_id) {
   m_active_session = ipc_id;
 }
 
-void RimeWithFengyuHandler::FocusOut(DWORD param, FengyuSessionId ipc_id) {
+void FengyuBridgeHandler::FocusOut(DWORD param, FengyuSessionId ipc_id) {
   DLOG(INFO) << "Focus out: ipc_id = " << ipc_id;
   if (m_ui)
     m_ui->Hide();
   m_active_session = 0;
 }
 
-void RimeWithFengyuHandler::UpdateInputPosition(RECT const& rc,
+void FengyuBridgeHandler::UpdateInputPosition(RECT const& rc,
                                                 FengyuSessionId ipc_id) {
   DLOG(INFO) << "Update input position: (" << rc.left << ", " << rc.top
              << "), ipc_id = " << ipc_id
@@ -416,18 +416,18 @@ void RimeWithFengyuHandler::UpdateInputPosition(RECT const& rc,
   }
 }
 
-std::string RimeWithFengyuHandler::m_message_type;
-std::string RimeWithFengyuHandler::m_message_value;
-std::string RimeWithFengyuHandler::m_message_label;
-std::string RimeWithFengyuHandler::m_option_name;
+std::string FengyuBridgeHandler::m_message_type;
+std::string FengyuBridgeHandler::m_message_value;
+std::string FengyuBridgeHandler::m_message_label;
+std::string FengyuBridgeHandler::m_option_name;
 
-void RimeWithFengyuHandler::OnNotify(void* context_object,
+void FengyuBridgeHandler::OnNotify(void* context_object,
                                      uintptr_t session_id,
                                      const char* message_type,
                                      const char* message_value) {
-  // may be running in a thread when deploying rime
-  RimeWithFengyuHandler* self =
-      reinterpret_cast<RimeWithFengyuHandler*>(context_object);
+  // may be running in a thread when deploying the engine
+  FengyuBridgeHandler* self =
+      reinterpret_cast<FengyuBridgeHandler*>(context_object);
   if (!self || !message_type || !message_value)
     return;
   m_message_type = message_type;
@@ -445,7 +445,7 @@ void RimeWithFengyuHandler::OnNotify(void* context_object,
   }
 }
 
-void RimeWithFengyuHandler::_ReadClientInfo(FengyuSessionId ipc_id,
+void FengyuBridgeHandler::_ReadClientInfo(FengyuSessionId ipc_id,
                                             LPWSTR buffer) {
   std::string app_name;
   std::string client_type;
@@ -495,7 +495,7 @@ void RimeWithFengyuHandler::_ReadClientInfo(FengyuSessionId ipc_id,
   rime_api->set_option(session_id, "soft_cursor", Bool(!inline_preedit));
 }
 
-void RimeWithFengyuHandler::_GetCandidateInfo(CandidateInfo& cinfo,
+void FengyuBridgeHandler::_GetCandidateInfo(CandidateInfo& cinfo,
                                               RimeContext& ctx) {
   cinfo.candies.resize(ctx.menu.num_candidates);
   cinfo.comments.resize(ctx.menu.num_candidates);
@@ -520,13 +520,13 @@ void RimeWithFengyuHandler::_GetCandidateInfo(CandidateInfo& cinfo,
   cinfo.is_last_page = ctx.menu.is_last_page;
 }
 
-void RimeWithFengyuHandler::StartMaintenance() {
+void FengyuBridgeHandler::StartMaintenance() {
   m_session_status_map.clear();
   Finalize();
   _UpdateUI(0);
 }
 
-void RimeWithFengyuHandler::EndMaintenance() {
+void FengyuBridgeHandler::EndMaintenance() {
   if (m_disabled) {
     Initialize();
     _UpdateUI(0);
@@ -534,7 +534,7 @@ void RimeWithFengyuHandler::EndMaintenance() {
   m_session_status_map.clear();
 }
 
-void RimeWithFengyuHandler::SetOption(FengyuSessionId ipc_id,
+void FengyuBridgeHandler::SetOption(FengyuSessionId ipc_id,
                                       const std::string& opt,
                                       bool val) {
   // from no-session client, not actual typing session
@@ -550,11 +550,11 @@ void RimeWithFengyuHandler::SetOption(FengyuSessionId ipc_id,
   }
 }
 
-void RimeWithFengyuHandler::OnUpdateUI(std::function<void()> const& cb) {
+void FengyuBridgeHandler::OnUpdateUI(std::function<void()> const& cb) {
   _UpdateUICallback = cb;
 }
 
-bool RimeWithFengyuHandler::_IsDeployerRunning() {
+bool FengyuBridgeHandler::_IsDeployerRunning() {
   HANDLE hMutex = CreateMutex(NULL, TRUE, FENGYU_DEPLOYER_MUTEX);
   bool deployer_detected = hMutex && GetLastError() == ERROR_ALREADY_EXISTS;
   if (hMutex) {
@@ -563,7 +563,7 @@ bool RimeWithFengyuHandler::_IsDeployerRunning() {
   return deployer_detected;
 }
 
-void RimeWithFengyuHandler::_UpdateUI(FengyuSessionId ipc_id) {
+void FengyuBridgeHandler::_UpdateUI(FengyuSessionId ipc_id) {
   // if m_ui nullptr, _UpdateUI meaningless
   if (!m_ui)
     return;
@@ -605,7 +605,7 @@ void RimeWithFengyuHandler::_UpdateUI(FengyuSessionId ipc_id) {
   m_option_name.clear();
 }
 
-void RimeWithFengyuHandler::_LoadSchemaSpecificSettings(
+void FengyuBridgeHandler::_LoadSchemaSpecificSettings(
     FengyuSessionId ipc_id,
     const std::string& schema_id) {
   if (!m_ui)
@@ -670,7 +670,7 @@ void RimeWithFengyuHandler::_LoadSchemaSpecificSettings(
   rime_api->config_close(&config);
 }
 
-void RimeWithFengyuHandler::_LoadAppInlinePreeditSet(FengyuSessionId ipc_id,
+void FengyuBridgeHandler::_LoadAppInlinePreeditSet(FengyuSessionId ipc_id,
                                                      bool ignore_app_name) {
   SessionStatus& session_status = get_session_status(ipc_id);
   RimeSessionId session_id = session_status.session_id;
@@ -720,16 +720,16 @@ void RimeWithFengyuHandler::_LoadAppInlinePreeditSet(FengyuSessionId ipc_id,
     _UpdateInlinePreeditStatus(ipc_id);
 }
 
-bool RimeWithFengyuHandler::_ShowMessage(Context& ctx, Status& status) {
+bool FengyuBridgeHandler::_ShowMessage(Context& ctx, Status& status) {
   // show as auxiliary string
   std::wstring& tips(ctx.aux.str);
   bool show_icon = false;
   if (m_message_type == "deploy") {
     if (m_message_value == "start")
       if (GetThreadUILanguage() == MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US))
-        tips = L"Deploying RIME";
+        tips = L"Deploying Fengyu IME";
       else
-        tips = L"正在部署 RIME";
+        tips = L"正在部署風語輸入法";
     else if (m_message_value == "success")
       if (GetThreadUILanguage() == MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US))
         tips = L"Deployed";
@@ -738,14 +738,14 @@ bool RimeWithFengyuHandler::_ShowMessage(Context& ctx, Status& status) {
     else if (m_message_value == "failure") {
       if (GetThreadUILanguage() ==
           MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_TRADITIONAL))
-        tips = L"有錯誤，請查看日誌 %TEMP%\\rime.fengyu\\rime.fengyu.*.INFO";
+        tips = L"有錯誤，請查看日誌 %TEMP%\\fengyu-ime\\fengyu-ime.*.INFO";
       else if (GetThreadUILanguage() ==
                MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED))
-        tips = L"有错误，请查看日志 %TEMP%\\rime.fengyu\\rime.fengyu.*.INFO";
+        tips = L"有错误，请查看日志 %TEMP%\\fengyu-ime\\fengyu-ime.*.INFO";
       else
         tips =
             L"There is an error, please check the logs "
-            L"%TEMP%\\rime.fengyu\\rime.fengyu.*.INFO";
+            L"%TEMP%\\fengyu-ime\\fengyu-ime.*.INFO";
     }
   } else if (m_message_type == "schema") {
     tips = /*L"【" + */ status.schema_name /* + L"】"*/;
@@ -784,7 +784,7 @@ inline std::string _GetLabelText(const std::vector<Text>& labels,
   return wtou8(std::wstring(buffer));
 }
 
-bool RimeWithFengyuHandler::_Respond(FengyuSessionId ipc_id, EatLine eat) {
+bool FengyuBridgeHandler::_Respond(FengyuSessionId ipc_id, EatLine eat) {
   std::set<std::string> actions;
   std::list<std::string> messages;
 
@@ -980,7 +980,7 @@ static inline COLORREF blend_colors(COLORREF fcolor, COLORREF bcolor) {
   return (BYTE)(retAlpha * 255) << 24 | retB << 16 | retG << 8 | retR;
 }
 // parse color value, with fallback value
-static Bool _RimeGetColor(RimeConfig* config,
+static Bool _FengyuGetColor(RimeConfig* config,
                           const std::string key,
                           int& value,
                           const ColorFormat& fmt,
@@ -1044,7 +1044,7 @@ static Bool _RimeGetColor(RimeConfig* config,
 }
 // parset bool type configuration to T type value trueValue / falseValue
 template <typename T>
-void _RimeGetBool(RimeConfig* config,
+void _FengyuGetBool(RimeConfig* config,
                   const char* key,
                   bool cond,
                   T& value,
@@ -1057,7 +1057,7 @@ void _RimeGetBool(RimeConfig* config,
 }
 //	parse string option to T type value, with fallback
 template <typename T>
-void _RimeParseStringOptWithFallback(RimeConfig* config,
+void _FengyuParseStringOptWithFallback(RimeConfig* config,
                                      const std::string& key,
                                      T& value,
                                      const std::map<std::string, T>& amap,
@@ -1072,7 +1072,7 @@ void _RimeParseStringOptWithFallback(RimeConfig* config,
 }
 
 template <typename T>
-void _RimeGetIntStr(RimeConfig* config,
+void _FengyuGetIntStr(RimeConfig* config,
                     const char* key,
                     T& value,
                     const char* fb_key = nullptr,
@@ -1096,7 +1096,7 @@ void _RimeGetIntStr(RimeConfig* config,
     func(value);
 }
 
-void RimeWithFengyuHandler::_UpdateShowNotifications(RimeConfig* config,
+void FengyuBridgeHandler::_UpdateShowNotifications(RimeConfig* config,
                                                      bool initialize) {
   Bool show_notifications = true;
   RimeConfigIterator iter;
@@ -1138,11 +1138,11 @@ static void _UpdateUIStyle(RimeConfig* config, UI* ui, bool initialize) {
   };
   const std::function<void(int&)> _abs = [](int& value) { value = abs(value); };
   // get font faces
-  _RimeGetIntStr(config, "style/font_face", style.font_face, 0, 0, rmspace);
+  _FengyuGetIntStr(config, "style/font_face", style.font_face, 0, 0, rmspace);
   std::wstring* const pFallbackFontFace = initialize ? &style.font_face : NULL;
-  _RimeGetIntStr(config, "style/label_font_face", style.label_font_face, 0,
+  _FengyuGetIntStr(config, "style/label_font_face", style.label_font_face, 0,
                  pFallbackFontFace, rmspace);
-  _RimeGetIntStr(config, "style/comment_font_face", style.comment_font_face, 0,
+  _FengyuGetIntStr(config, "style/comment_font_face", style.comment_font_face, 0,
                  pFallbackFontFace, rmspace);
   // able to set label font/comment font empty, force fallback to font face.
   if (style.label_font_face.empty())
@@ -1150,24 +1150,24 @@ static void _UpdateUIStyle(RimeConfig* config, UI* ui, bool initialize) {
   if (style.comment_font_face.empty())
     style.comment_font_face = style.font_face;
   // get font points
-  _RimeGetIntStr(config, "style/font_point", style.font_point);
+  _FengyuGetIntStr(config, "style/font_point", style.font_point);
   if (style.font_point <= 0)
     style.font_point = 12;
-  _RimeGetIntStr(config, "style/label_font_point", style.label_font_point,
+  _FengyuGetIntStr(config, "style/label_font_point", style.label_font_point,
                  "style/font_point", 0, _abs);
-  _RimeGetIntStr(config, "style/comment_font_point", style.comment_font_point,
+  _FengyuGetIntStr(config, "style/comment_font_point", style.comment_font_point,
                  "style/font_point", 0, _abs);
-  _RimeGetIntStr(config, "style/candidate_abbreviate_length",
+  _FengyuGetIntStr(config, "style/candidate_abbreviate_length",
                  style.candidate_abbreviate_length, 0, 0, _abs);
-  _RimeGetBool(config, "style/inline_preedit", initialize,
+  _FengyuGetBool(config, "style/inline_preedit", initialize,
                style.inline_preedit);
-  _RimeGetBool(config, "style/vertical_auto_reverse", initialize,
+  _FengyuGetBool(config, "style/vertical_auto_reverse", initialize,
                style.vertical_auto_reverse);
   const std::map<std::string, UIStyle::PreeditType> _preeditMap = {
       {std::string("composition"), UIStyle::COMPOSITION},
       {std::string("preview"), UIStyle::PREVIEW},
       {std::string("preview_all"), UIStyle::PREVIEW_ALL}};
-  _RimeParseStringOptWithFallback(config, "style/preedit_type",
+  _FengyuParseStringOptWithFallback(config, "style/preedit_type",
                                   style.preedit_type, _preeditMap,
                                   style.preedit_type);
   const std::map<std::string, UIStyle::AntiAliasMode> _aliasModeMap = {
@@ -1176,61 +1176,61 @@ static void _UpdateUIStyle(RimeConfig* config, UI* ui, bool initialize) {
       {std::string("grayscale"), UIStyle::GRAYSCALE},
       {std::string("aliased"), UIStyle::ALIASED},
       {std::string("default"), UIStyle::DEFAULT}};
-  _RimeParseStringOptWithFallback(config, "style/antialias_mode",
+  _FengyuParseStringOptWithFallback(config, "style/antialias_mode",
                                   style.antialias_mode, _aliasModeMap,
                                   style.antialias_mode);
   const std::map<std::string, UIStyle::HoverType> _hoverTypeMap = {
       {std::string("none"), UIStyle::HoverType::NONE},
       {std::string("semi_hilite"), UIStyle::HoverType::SEMI_HILITE},
       {std::string("hilite"), UIStyle::HoverType::HILITE}};
-  _RimeParseStringOptWithFallback(config, "style/hover_type", style.hover_type,
+  _FengyuParseStringOptWithFallback(config, "style/hover_type", style.hover_type,
                                   _hoverTypeMap, style.hover_type);
   const std::map<std::string, UIStyle::LayoutAlignType> _alignType = {
       {std::string("top"), UIStyle::ALIGN_TOP},
       {std::string("center"), UIStyle::ALIGN_CENTER},
       {std::string("bottom"), UIStyle::ALIGN_BOTTOM}};
-  _RimeParseStringOptWithFallback(config, "style/layout/align_type",
+  _FengyuParseStringOptWithFallback(config, "style/layout/align_type",
                                   style.align_type, _alignType,
                                   style.align_type);
-  _RimeGetBool(config, "style/display_tray_icon", initialize,
+  _FengyuGetBool(config, "style/display_tray_icon", initialize,
                style.display_tray_icon);
-  _RimeGetBool(config, "style/ascii_tip_follow_cursor", initialize,
+  _FengyuGetBool(config, "style/ascii_tip_follow_cursor", initialize,
                style.ascii_tip_follow_cursor);
-  _RimeGetBool(config, "style/horizontal", initialize, style.layout_type,
+  _FengyuGetBool(config, "style/horizontal", initialize, style.layout_type,
                UIStyle::LAYOUT_HORIZONTAL, UIStyle::LAYOUT_VERTICAL);
-  _RimeGetBool(config, "style/paging_on_scroll", initialize,
+  _FengyuGetBool(config, "style/paging_on_scroll", initialize,
                style.paging_on_scroll);
-  _RimeGetBool(config, "style/click_to_capture", initialize,
+  _FengyuGetBool(config, "style/click_to_capture", initialize,
                style.click_to_capture, true, false);
-  _RimeGetBool(config, "style/fullscreen", false, style.layout_type,
+  _FengyuGetBool(config, "style/fullscreen", false, style.layout_type,
                ((style.layout_type == UIStyle::LAYOUT_HORIZONTAL)
                     ? UIStyle::LAYOUT_HORIZONTAL_FULLSCREEN
                     : UIStyle::LAYOUT_VERTICAL_FULLSCREEN),
                style.layout_type);
-  _RimeGetBool(config, "style/vertical_text", false, style.layout_type,
+  _FengyuGetBool(config, "style/vertical_text", false, style.layout_type,
                UIStyle::LAYOUT_VERTICAL_TEXT, style.layout_type);
-  _RimeGetBool(config, "style/vertical_text_left_to_right", false,
+  _FengyuGetBool(config, "style/vertical_text_left_to_right", false,
                style.vertical_text_left_to_right);
-  _RimeGetBool(config, "style/vertical_text_with_wrap", false,
+  _FengyuGetBool(config, "style/vertical_text_with_wrap", false,
                style.vertical_text_with_wrap);
   const std::map<std::string, bool> _text_orientation = {
       {std::string("horizontal"), false}, {std::string("vertical"), true}};
   bool _text_orientation_bool = false;
-  _RimeParseStringOptWithFallback(config, "style/text_orientation",
+  _FengyuParseStringOptWithFallback(config, "style/text_orientation",
                                   _text_orientation_bool, _text_orientation,
                                   _text_orientation_bool);
   if (_text_orientation_bool)
     style.layout_type = UIStyle::LAYOUT_VERTICAL_TEXT;
-  _RimeGetIntStr(config, "style/label_format", style.label_text_format);
-  _RimeGetIntStr(config, "style/mark_text", style.mark_text);
-  _RimeGetIntStr(config, "style/layout/baseline", style.baseline, 0, 0, _abs);
-  _RimeGetIntStr(config, "style/layout/linespacing", style.linespacing, 0, 0,
+  _FengyuGetIntStr(config, "style/label_format", style.label_text_format);
+  _FengyuGetIntStr(config, "style/mark_text", style.mark_text);
+  _FengyuGetIntStr(config, "style/layout/baseline", style.baseline, 0, 0, _abs);
+  _FengyuGetIntStr(config, "style/layout/linespacing", style.linespacing, 0, 0,
                  _abs);
-  _RimeGetIntStr(config, "style/layout/min_width", style.min_width, 0, 0, _abs);
-  _RimeGetIntStr(config, "style/layout/max_width", style.max_width, 0, 0, _abs);
-  _RimeGetIntStr(config, "style/layout/min_height", style.min_height, 0, 0,
+  _FengyuGetIntStr(config, "style/layout/min_width", style.min_width, 0, 0, _abs);
+  _FengyuGetIntStr(config, "style/layout/max_width", style.max_width, 0, 0, _abs);
+  _FengyuGetIntStr(config, "style/layout/min_height", style.min_height, 0, 0,
                  _abs);
-  _RimeGetIntStr(config, "style/layout/max_height", style.max_height, 0, 0,
+  _FengyuGetIntStr(config, "style/layout/max_height", style.max_height, 0, 0,
                  _abs);
   // layout (alternative to style/horizontal)
   const std::map<std::string, UIStyle::LayoutType> _layoutMap = {
@@ -1240,7 +1240,7 @@ static void _UpdateUIStyle(RimeConfig* config, UI* ui, bool initialize) {
       {std::string("vertical+fullscreen"), UIStyle::LAYOUT_VERTICAL_FULLSCREEN},
       {std::string("horizontal+fullscreen"),
        UIStyle::LAYOUT_HORIZONTAL_FULLSCREEN}};
-  _RimeParseStringOptWithFallback(config, "style/layout/type",
+  _FengyuParseStringOptWithFallback(config, "style/layout/type",
                                   style.layout_type, _layoutMap,
                                   style.layout_type);
   // disable max_width when full screen
@@ -1249,34 +1249,34 @@ static void _UpdateUIStyle(RimeConfig* config, UI* ui, bool initialize) {
     style.max_width = 0;
     style.inline_preedit = false;
   }
-  _RimeGetIntStr(config, "style/layout/border", style.border,
+  _FengyuGetIntStr(config, "style/layout/border", style.border,
                  "style/layout/border_width", 0, _abs);
-  _RimeGetIntStr(config, "style/layout/margin_x", style.margin_x);
-  _RimeGetIntStr(config, "style/layout/margin_y", style.margin_y);
-  _RimeGetIntStr(config, "style/layout/spacing", style.spacing, 0, 0, _abs);
-  _RimeGetIntStr(config, "style/layout/candidate_spacing",
+  _FengyuGetIntStr(config, "style/layout/margin_x", style.margin_x);
+  _FengyuGetIntStr(config, "style/layout/margin_y", style.margin_y);
+  _FengyuGetIntStr(config, "style/layout/spacing", style.spacing, 0, 0, _abs);
+  _FengyuGetIntStr(config, "style/layout/candidate_spacing",
                  style.candidate_spacing, 0, 0, _abs);
-  _RimeGetIntStr(config, "style/layout/hilite_spacing", style.hilite_spacing, 0,
+  _FengyuGetIntStr(config, "style/layout/hilite_spacing", style.hilite_spacing, 0,
                  0, _abs);
-  _RimeGetIntStr(config, "style/layout/hilite_padding_x",
+  _FengyuGetIntStr(config, "style/layout/hilite_padding_x",
                  style.hilite_padding_x, "style/layout/hilite_padding", 0,
                  _abs);
-  _RimeGetIntStr(config, "style/layout/hilite_padding_y",
+  _FengyuGetIntStr(config, "style/layout/hilite_padding_y",
                  style.hilite_padding_y, "style/layout/hilite_padding", 0,
                  _abs);
-  _RimeGetIntStr(config, "style/layout/shadow_radius", style.shadow_radius, 0,
+  _FengyuGetIntStr(config, "style/layout/shadow_radius", style.shadow_radius, 0,
                  0, _abs);
   // disable shadow for fullscreen layout
   style.shadow_radius *=
       (!(style.layout_type == UIStyle::LAYOUT_HORIZONTAL_FULLSCREEN ||
          style.layout_type == UIStyle::LAYOUT_VERTICAL_FULLSCREEN));
-  _RimeGetIntStr(config, "style/layout/shadow_offset_x", style.shadow_offset_x);
-  _RimeGetIntStr(config, "style/layout/shadow_offset_y", style.shadow_offset_y);
+  _FengyuGetIntStr(config, "style/layout/shadow_offset_x", style.shadow_offset_x);
+  _FengyuGetIntStr(config, "style/layout/shadow_offset_y", style.shadow_offset_y);
   // round_corner as alias of hilited_corner_radius
-  _RimeGetIntStr(config, "style/layout/hilited_corner_radius",
+  _FengyuGetIntStr(config, "style/layout/hilited_corner_radius",
                  style.round_corner, "style/layout/round_corner", 0, _abs);
   // corner_radius not set, fallback to round_corner
-  _RimeGetIntStr(config, "style/layout/corner_radius", style.round_corner_ex,
+  _FengyuGetIntStr(config, "style/layout/corner_radius", style.round_corner_ex,
                  "style/layout/round_corner", 0, _abs);
   // fix padding and spacing settings
   if (style.layout_type != UIStyle::LAYOUT_VERTICAL_TEXT) {
@@ -1323,7 +1323,7 @@ static void _UpdateUIStyle(RimeConfig* config, UI* ui, bool initialize) {
   scale = style.margin_y < 0 ? -1 : 1;
   style.margin_y = scale * max(style.hilite_padding_y, abs(style.margin_y));
   // get enhanced_position
-  _RimeGetBool(config, "style/enhanced_position", initialize,
+  _FengyuGetBool(config, "style/enhanced_position", initialize,
                style.enhanced_position, true, false);
   // get color scheme
   const int BUF_SIZE = 255;
@@ -1352,10 +1352,10 @@ static bool _UpdateUIStyleColor(RimeConfig* config,
         {std::string("argb"), COLOR_ARGB},
         {std::string("rgba"), COLOR_RGBA},
         {std::string("abgr"), COLOR_ABGR}};
-    _RimeParseStringOptWithFallback(config, (prefix + "/color_format"), fmt,
+    _FengyuParseStringOptWithFallback(config, (prefix + "/color_format"), fmt,
                                     _colorFmt, COLOR_ABGR);
 #define COLOR(key, value, fallback) \
-  _RimeGetColor(config, (prefix + "/" + key), value, fmt, fallback)
+  _FengyuGetColor(config, (prefix + "/" + key), value, fmt, fallback)
     COLOR("back_color", style.back_color, 0xffffffff);
     COLOR("shadow_color", style.shadow_color, 0);
     COLOR("prevpage_color", style.prevpage_color, 0);
@@ -1413,7 +1413,7 @@ static void _LoadAppOptions(RimeConfig* config,
   rime_api->config_end(&app_iter);
 }
 
-void RimeWithFengyuHandler::_GetStatus(Status& stat,
+void FengyuBridgeHandler::_GetStatus(Status& stat,
                                        FengyuSessionId ipc_id,
                                        Context& ctx) {
   SessionStatus& session_status = get_session_status(ipc_id);
@@ -1454,7 +1454,7 @@ void RimeWithFengyuHandler::_GetStatus(Status& stat,
   }
 }
 
-void RimeWithFengyuHandler::_GetContext(Context& fengyu_context,
+void FengyuBridgeHandler::_GetContext(Context& fengyu_context,
                                         RimeSessionId session_id) {
   RIME_STRUCT(RimeContext, ctx);
   if (rime_api->get_context(session_id, &ctx)) {
@@ -1479,14 +1479,14 @@ void RimeWithFengyuHandler::_GetContext(Context& fengyu_context,
   }
 }
 
-bool RimeWithFengyuHandler::_IsSessionTSF(RimeSessionId session_id) {
+bool FengyuBridgeHandler::_IsSessionTSF(RimeSessionId session_id) {
   static char client_type[20] = {0};
   rime_api->get_property(session_id, "client_type", client_type,
                          sizeof(client_type) - 1);
   return std::string(client_type) == "tsf";
 }
 
-void RimeWithFengyuHandler::_UpdateInlinePreeditStatus(FengyuSessionId ipc_id) {
+void FengyuBridgeHandler::_UpdateInlinePreeditStatus(FengyuSessionId ipc_id) {
   if (!m_ui)
     return;
   SessionStatus& session_status = get_session_status(ipc_id);

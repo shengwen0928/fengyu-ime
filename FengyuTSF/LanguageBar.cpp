@@ -312,7 +312,7 @@ void FengyuTSF::_HandleLangBarMenuSelect(UINT wID) {
       break;
     case ID_FENGYUTRAY_USERCONFIG:
       if (FAILED(RegGetStringValue(HKEY_CURRENT_USER, L"Software\\Fengyu\\IME",
-                                   L"RimeUserDir", dir)) ||
+                                   L"UserDir", dir)) ||
           dir.empty()) {
         WCHAR _path[MAX_PATH] = {0};
         ExpandEnvironmentStringsW(L"%AppData%\\Fengyu", _path, _countof(_path));
@@ -321,17 +321,17 @@ void FengyuTSF::_HandleLangBarMenuSelect(UINT wID) {
       if (!dir.empty() && fs::exists(dir))
         explore(dir);
       else
-        MessageBoxW(NULL, (L"Not found: " + dir).c_str(), L"RimeUserDir",
+        MessageBoxW(NULL, (L"Not found: " + dir).c_str(), L"UserDir",
                     MB_ICONERROR | MB_OK);
       break;
     case ID_FENGYUTRAY_LOGDIR:
       explore(FengyuLogPath().wstring());
       break;
     case ID_FENGYUTRAY_WIKI:
-      open(L"https://rime.im/docs/");
+      open(L"https://github.com/shengwen0928/fengyu-ime#readme");
       break;
     case ID_FENGYUTRAY_FORUM:
-      open(L"https://rime.im/discuss/");
+      open(L"https://github.com/shengwen0928/fengyu-ime/issues");
       break;
     default:
       m_client.TrayCommand(wID);

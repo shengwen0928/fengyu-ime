@@ -3,7 +3,7 @@ param (
     [switch]$i
 )
 
-$FENGYU_SOURCE_PATH = @("RimeWithFengyu", "FengyuDeployer", "FengyuIME",
+$FENGYU_SOURCE_PATH = @("FengyuBridge", "FengyuDeployer", "FengyuIME",
   "FengyuIPC", "FengyuIPCServer", "FengyuServer", "FengyuSetup",
   "FengyuTSF", "FengyuUI", "include", "test")
 $excludePatterns = Get-Content .exclude_pattern.txt

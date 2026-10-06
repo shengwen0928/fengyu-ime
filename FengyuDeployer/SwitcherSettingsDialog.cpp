@@ -96,7 +96,9 @@ LRESULT SwitcherSettingsDialog::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
   hotkeys_.EnableWindow(FALSE);
 
   get_schemata_.Attach(GetDlgItem(IDC_GET_SCHEMATA));
-  get_schemata_.EnableWindow(TRUE);
+  // 風語輸入法不附帶方案下載工具，隱藏「取得更多方案」按鈕
+  get_schemata_.EnableWindow(FALSE);
+  get_schemata_.ShowWindow(SW_HIDE);
 
   Populate();
 

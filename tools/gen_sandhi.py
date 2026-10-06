@@ -1,4 +1,4 @@
-"""風語輸入法 — 產生「一」「不」變調詞庫（rime/fengyu.dict.yaml）。
+"""風語輸入法 — 產生「一」「不」變調詞庫（schema/fengyu.dict.yaml）。
 
 用法：python gen_sandhi.py
 照實際讀音打也能出字，例如 ㄧˊ ㄧㄤˋ → 一樣、ㄧˋ ㄑㄧˇ → 一起、ㄅㄨˊ ㄧㄠˋ → 不要。
@@ -6,8 +6,8 @@
 """
 from pathlib import Path
 
-from gen_english import RIME_DATA
-OUT = Path(__file__).resolve().parent.parent / 'rime' / 'fengyu.dict.yaml'
+from gen_english import INSTALL_DATA
+OUT = Path(__file__).resolve().parent.parent / 'schema' / 'fengyu.dict.yaml'
 
 HEADER = """# 風語輸入法（AIW 風光Ai窗）— 詞庫
 # 由 tools/gen_sandhi.py 產生，請勿手動修改
@@ -24,7 +24,7 @@ import_tables:
 
 def char_readings():
     """每個字最常用的讀音"""
-    body = (RIME_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8').split('\n...\n', 1)[1]
+    body = (INSTALL_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8').split('\n...\n', 1)[1]
     best = {}
     for line in body.splitlines():
         parts = line.split('\t')
@@ -50,7 +50,7 @@ def sandhi(word, codes):
 def main():
     readings = char_readings()
     rows = []
-    for line in (RIME_DATA / 'essay.txt').read_text(encoding='utf-8').splitlines():
+    for line in (INSTALL_DATA / 'essay.txt').read_text(encoding='utf-8').splitlines():
         word, _, weight = line.partition('\t')
         if len(word) < 2 or ('一' not in word[:-1] and '不' not in word[:-1]):
             continue

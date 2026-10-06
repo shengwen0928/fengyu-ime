@@ -42,7 +42,7 @@ void Configurator::Initialize() {
   fengyu_traits.distribution_name = distribution_name.c_str();
   fengyu_traits.distribution_code_name = FENGYU_CODE_NAME;
   fengyu_traits.distribution_version = FENGYU_VERSION;
-  fengyu_traits.app_name = "rime.fengyu";
+  fengyu_traits.app_name = "fengyu-ime";
   std::string log_dir = FengyuLogPath().u8string();
   fengyu_traits.log_dir = log_dir.c_str();
   RimeApi* rime_api = rime_get_api();

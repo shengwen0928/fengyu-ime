@@ -655,7 +655,7 @@ int uninstall(bool silent) {
 
   // 清除注册信息
   RegDeleteKey(HKEY_LOCAL_MACHINE, FENGYU_REG_KEY);
-  RegDeleteKey(HKEY_LOCAL_MACHINE, RIME_REG_KEY);
+  RegDeleteKey(HKEY_LOCAL_MACHINE, FENGYU_ROOT_REG_KEY);
 
   // delete WER register,
   // "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\Windows Error

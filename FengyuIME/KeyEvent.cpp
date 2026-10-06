@@ -28,7 +28,7 @@ bool ConvertKeyEvent(UINT vkey,
     result.mask |= ibus::RELEASE_MASK;
 
   if (vkey == VK_CAPITAL && !kinfo.isKeyUp) {
-    // NOTE: rime assumes XK_Caps_Lock to be sent before modifier changes,
+    // NOTE: the engine assumes XK_Caps_Lock to be sent before modifier changes,
     // while VK_CAPITAL has the modifier changed already.
     // so it is necessary to revert LOCK_MASK.
     result.mask ^= ibus::LOCK_MASK;

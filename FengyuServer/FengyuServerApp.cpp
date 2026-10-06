@@ -3,9 +3,9 @@
 #include <filesystem>
 
 FengyuServerApp::FengyuServerApp()
-    : m_handler(std::make_unique<RimeWithFengyuHandler>(&m_ui)),
+    : m_handler(std::make_unique<FengyuBridgeHandler>(&m_ui)),
       tray_icon(m_ui) {
-  // m_handler.reset(new RimeWithFengyuHandler(&m_ui));
+  // m_handler.reset(new FengyuBridgeHandler(&m_ui));
   m_server.SetRequestHandler(m_handler.get());
   SetupMenuHandlers();
 }
@@ -64,11 +64,11 @@ void FengyuServerApp::SetupMenuHandlers() {
       ID_FENGYUTRAY_SYNC,
       std::bind(execute, dir / L"FengyuDeployer.exe", std::wstring(L"/sync")));
   m_server.AddMenuHandler(ID_FENGYUTRAY_WIKI,
-                          std::bind(open, L"https://rime.im/docs/"));
+                          std::bind(open, L"https://github.com/shengwen0928/fengyu-ime#readme"));
   m_server.AddMenuHandler(ID_FENGYUTRAY_HOMEPAGE,
-                          std::bind(open, L"https://rime.im/"));
+                          std::bind(open, L"https://github.com/shengwen0928/fengyu-ime"));
   m_server.AddMenuHandler(ID_FENGYUTRAY_FORUM,
-                          std::bind(open, L"https://rime.im/discuss/"));
+                          std::bind(open, L"https://github.com/shengwen0928/fengyu-ime/issues"));
   m_server.AddMenuHandler(ID_FENGYUTRAY_CHECKUPDATE, check_update);
   m_server.AddMenuHandler(ID_FENGYUTRAY_INSTALLDIR, std::bind(explore, dir));
   m_server.AddMenuHandler(ID_FENGYUTRAY_USERCONFIG,

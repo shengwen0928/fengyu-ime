@@ -1,4 +1,4 @@
-"""風語輸入法 — 產生詞庫 rime/fengyu.dict.yaml。
+"""風語輸入法 — 產生詞庫 schema/fengyu.dict.yaml。
 
 用法：python gen_dict.py
 內容：
@@ -12,11 +12,11 @@ import lzma
 import re
 from pathlib import Path
 
-from gen_english import PINYIN_TO_ZHUYIN, RIME_DATA
+from gen_english import PINYIN_TO_ZHUYIN, INSTALL_DATA
 from gen_sandhi import char_readings, sandhi
 
 HERE = Path(__file__).resolve().parent
-OUT = HERE.parent / 'rime' / 'fengyu.dict.yaml'
+OUT = HERE.parent / 'schema' / 'fengyu.dict.yaml'
 MOE = HERE / 'dict-revised.json.xz'
 
 HEADER = """# 風語輸入法（AIW 風光Ai窗）— 詞庫
@@ -40,7 +40,7 @@ CJK = re.compile(r'^[㐀-鿿\U00020000-\U0002ffff]+$')
 
 def zhuyin_to_pinyin_table():
     """注音（不含聲調）→ terra_pinyin 拼音（不含聲調），由 terra_pinyin 的所有音節反推"""
-    body = (RIME_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8').split('\n...\n', 1)[1]
+    body = (INSTALL_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8').split('\n...\n', 1)[1]
     table = {}
     for line in body.splitlines():
         parts = line.split('\t')
@@ -157,7 +157,7 @@ def main():
     table = zhuyin_to_pinyin_table()
     readings = char_readings()
     essay = {}
-    for line in (RIME_DATA / 'essay.txt').read_text(encoding='utf-8').splitlines():
+    for line in (INSTALL_DATA / 'essay.txt').read_text(encoding='utf-8').splitlines():
         w, _, n = line.partition('\t')
         essay[w] = n
 
@@ -172,7 +172,7 @@ def main():
 
     # terra_pinyin 已有的單字讀音；重複列出會覆蓋原本的權重，所以只補沒有的
     terra_chars = set()
-    body = (RIME_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8').split('\n...\n', 1)[1]
+    body = (INSTALL_DATA / 'terra_pinyin.dict.yaml').read_text(encoding='utf-8').split('\n...\n', 1)[1]
     for line in body.splitlines():
         parts = line.split('\t')
         if len(parts) >= 2 and len(parts[0]) == 1:

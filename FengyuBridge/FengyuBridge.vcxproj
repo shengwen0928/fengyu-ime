@@ -36,7 +36,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1C497821-BD63-4F02-9094-32B185B62F23}</ProjectGuid>
-    <RootNamespace>RimeWithFengyu</RootNamespace>
+    <RootNamespace>FengyuBridge</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="..\fengyu.props" />
@@ -260,7 +260,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="RimeWithFengyu.cpp" />
+    <ClCompile Include="FengyuBridge.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>
@@ -274,7 +274,7 @@
     <ClCompile Include="FengyuUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\RimeWithFengyu.h" />
+    <ClInclude Include="..\include\FengyuBridge.h" />
     <ClInclude Include="..\include\FengyuUtility.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />

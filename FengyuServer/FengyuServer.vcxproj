@@ -513,7 +513,7 @@
     <ResourceCompile Include="FengyuServer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RimeWithFengyu\RimeWithFengyu.vcxproj">
+    <ProjectReference Include="..\FengyuBridge\FengyuBridge.vcxproj">
       <Project>{1c497821-bd63-4f02-9094-32b185b62f23}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
