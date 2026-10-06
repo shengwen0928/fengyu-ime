@@ -32,6 +32,7 @@ local function zhuyin_possible(run)
   end
   return ok[n] == true
 end
+M.zhuyin_possible = zhuyin_possible
 
 -- 一段純字母看起來是英文：
 --   是英文單字（或開頭）

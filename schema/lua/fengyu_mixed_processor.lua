@@ -108,6 +108,16 @@ local function func(key, env)
   local code = key.keycode
   local ch = (code > 0x20 and code < 0x7f) and string.char(code) or nil
 
+  -- Caps Lock 開著打注音（如 SU3＝ㄋㄧˇ）：結尾一段大寫字母後接聲調鍵，且轉小寫拼得成注音
+  -- → 視為注音，改回小寫再交給後面處理；英文單字中間不會夾聲調鍵，大寫英文不受影響
+  if ch and ch:match("[3467]") and ctx:is_composing() then
+    local prefix, run = ctx.input:match("^(.-)(%u+)$")
+    if run and (prefix == "" or prefix:match("[ 3467]$"))
+        and mixed.zhuyin_possible(run:lower()) then
+      ctx.input = prefix .. run:lower()
+    end
+  end
+
   -- 有多個選項的標點：顯示候選框（交給後面的 punctuator 處理）
   if ch and env.menu_puncts[ch] and ctx:get_option("fengyu_hide_menu") then
     ctx:set_option("fengyu_hide_menu", false)
