@@ -46,6 +46,7 @@ local function commit_mixed(env, ctx, prefix, text)
     ctx:clear()
   end
   env.engine:commit_text(text)
+  if text:match("%a%s*$") then mixed.last_kind = "en" end
 end
 
 -- 候選框預設隱藏（仿華碩／微軟注音；預設值由方案的 fengyu_hide_menu 開關設定）
@@ -58,6 +59,19 @@ local function init(env)
     if not ctx:get_option("fengyu_hide_menu") then
       ctx:set_option("fengyu_hide_menu", true)
     end
+    -- 記住送出的是中文還是英文（判斷下一段有衝突的按鍵用）
+    local text = ctx:get_commit_text()
+    local chinese = text:match("[\128-\255]") ~= nil
+    if chinese then
+      mixed.last_kind = "zh"
+    elseif text:match("%a") then
+      mixed.last_kind = "en"
+    end
+    -- 使用者按 ↓ 把英文改成中文、並送出同一段輸入 → 學起來，下次這組字母直接給中文
+    if mixed.forced_zh_run and chinese and ctx.input == mixed.forced_zh then
+      mixed.learn(mixed.forced_zh_run, "zh")
+    end
+    mixed.forced_zh, mixed.forced_zh_run = nil, nil
   end)
   -- 只有混打一種模式：任何方式切到英文模式（快捷鍵、工作列圖示）都立刻切回
   env.on_option = context.option_update_notifier:connect(function(ctx, name)
@@ -85,9 +99,32 @@ local function func(key, env)
 
   local k = key:repr()
   local ctx = env.engine.context
+  -- 離開組字（送出或清除）後，↓ 要求的中文不再適用
+  if not ctx:is_composing() then mixed.forced_zh, mixed.forced_zh_run = nil, nil end
 
-  if k == "Down" and ctx:is_composing() and ctx:get_option("fengyu_hide_menu") then
-    ctx:set_option("fengyu_hide_menu", false)
+  if k == "Down" and ctx:is_composing() then
+    -- 結尾被判成英文、使用者按 ↓：改給中文候選（選定後會學起來）
+    local _, run, is_number = mixed.split(ctx.input)
+    if run and not is_number then
+      mixed.forced_zh, mixed.forced_zh_run = ctx.input, run
+      if ctx:get_option("fengyu_hide_menu") then ctx:set_option("fengyu_hide_menu", false) end
+      ctx:refresh_non_confirmed_composition()
+      return kAccepted
+    end
+    if ctx:get_option("fengyu_hide_menu") then
+      ctx:set_option("fengyu_hide_menu", false)
+      return kAccepted
+    end
+  end
+
+  -- 候選框顯示中：數字鍵 1～9 直接選當頁候選（數字鍵平常是注音鍵，只有候選框打開時才拿來選字）
+  local code0 = key.keycode
+  if code0 >= 0x31 and code0 <= 0x39 and ctx:is_composing()
+      and not ctx:get_option("fengyu_hide_menu") and ctx:has_menu() then
+    local page = env.engine.schema.page_size
+    local seg = ctx.composition:back()
+    local idx = math.floor(seg.selected_index / page) * page + (code0 - 0x31)
+    ctx:select(idx)
     return kAccepted
   end
 
@@ -144,13 +181,24 @@ local function func(key, env)
     commit_mixed(env, ctx, "", ctx.input)
     return kAccepted
   end
+  -- 整段都是小寫字母、卻被判成中文時按 Enter：送出原本的英文字母，並學起來（下次空白也給英文）
+  if k == "Return" and ctx.input:match("^%l+$") and not mixed.split(ctx.input)
+      and ctx.input ~= mixed.forced_zh then
+    mixed.learn(ctx.input, "en")
+    commit_mixed(env, ctx, "", ctx.input)
+    return kAccepted
+  end
   local prefix, word, is_number = mixed.split(ctx.input)
   if not word then return kNoop end
   if is_number then
     commit_mixed(env, ctx, prefix, word)
     return kAccepted
   end
-  if k == "space" and not mixed.space_commits(word) then return kNoop end
+  -- 有衝突的字（剛好是注音一聲音節，如 up＝ㄧㄣ）：空白預設給中文，除非學過或前後文是英文
+  local conflict = not mixed.space_commits(word) or #word == 1
+  if k == "space" and conflict and not mixed.prefer_english(word, prefix) then return kNoop end
+  -- 有衝突的字用 Enter 送出英文 → 使用者明確要英文，學起來
+  if k == "Return" and conflict and not word:match("%u") then mixed.learn(word, "en") end
 
   commit_mixed(env, ctx, prefix, k == "space" and (word .. " ") or word)
   return kAccepted

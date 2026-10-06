@@ -47,6 +47,52 @@ function M.space_commits(run)
   return not english.tone1[run]
 end
 
+-- 上一次送出的是中文（zh）還是英文（en），由 processor 更新；用來判斷有衝突的按鍵
+M.last_kind = nil
+-- 使用者在英文上按 ↓ 要求改成中文的輸入碼與那段字母
+M.forced_zh = nil
+M.forced_zh_run = nil
+
+-- 學習：使用者對某組字母的偏好（en／zh），存在使用者資料夾的 fengyu_mixed_learn.txt
+local prefs = {}
+local learn_path = nil
+do
+  local ok, dir = pcall(function() return rime_api.get_user_data_dir() end)
+  if ok and dir and dir ~= "" then
+    learn_path = dir .. "/fengyu_mixed_learn.txt"
+    local f = io.open(learn_path, "r")
+    if f then
+      for line in f:lines() do
+        local run, kind = line:match("^(%l+)\t(%l+)$")
+        if run then prefs[run] = kind end
+      end
+      f:close()
+    end
+  end
+end
+
+function M.learn(run, kind)
+  run = run:lower()
+  if prefs[run] == kind then return end
+  prefs[run] = kind
+  if not learn_path then return end
+  local f = io.open(learn_path, "w")
+  if not f then return end
+  for r, k in pairs(prefs) do f:write(r, "\t", k, "\n") end
+  f:close()
+end
+
+-- 依學習與前後文判斷這段字母要不要當英文：true＝英文、false＝中文、nil＝沒有意見
+--   學過的照學到的；否則若前面沒有中文、上一次送出的是英文，英文單字（含單一字母）就當英文
+function M.prefer_english(run, prefix)
+  local p = prefs[run:lower()]
+  if p then return p == "en" end
+  if prefix == "" and M.last_kind == "en" and (english.words[run] or #run == 1) then
+    return true
+  end
+  return nil
+end
+
 -- 將輸入碼拆成「前段注音」與「結尾英文」；結尾不像英文則回傳 nil
 -- 前段必須是空的，或以聲調鍵（空白 3 4 6 7）結尾，確保英文不是某個注音音節的後半
 -- 由候選判斷出「轉成中文也不成詞」而改判英文的輸入碼（filter 記錄、processor 讀取）
@@ -62,8 +108,13 @@ end
 function M.split(input)
   local prefix, run = input:match("^(.-)(%a+)$")
   if run then
-    -- 含大寫字母一定是英文（注音按鍵都是小寫）；全小寫再判斷像不像英文
-    if not run:match("%u") and not M.looks_english(run) and input ~= M.forced_input then return nil end
+    -- 使用者按 ↓ 要求改成中文
+    if input == M.forced_zh then return nil end
+    -- 含大寫字母一定是英文（注音按鍵都是小寫）；全小寫依學習／前後文，再判斷像不像英文
+    local pref = nil
+    if not run:match("%u") then pref = M.prefer_english(run, prefix) end
+    if pref == false then return nil end
+    if not run:match("%u") and not pref and not M.looks_english(run) and input ~= M.forced_input then return nil end
     if prefix ~= "" and not prefix:match("[ 3467]$") then return nil end
     return prefix, run, false
   end

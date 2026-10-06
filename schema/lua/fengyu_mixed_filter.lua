@@ -19,7 +19,7 @@ return function(input, env)
   if not run then
     local first
     for cand in input:iter() do first = cand; break end
-    if junk_chinese(ctx.input, first) then
+    if ctx.input ~= mixed.forced_zh and junk_chinese(ctx.input, first) then
       mixed.forced_input = ctx.input
       return  -- 不給候選，組字區顯示原始字母
     end
