@@ -1,11 +1,11 @@
 ﻿#pragma once
-#include <WeaselIPCData.h>
+#include <FengyuIPCData.h>
 #include <windows.h>
 #include <map>
 #include <memory>
 #include <string>
 
-namespace weasel {
+namespace fengyu {
 class Deserializer;
 
 // 解析server回應文本
@@ -31,4 +31,4 @@ struct ResponseParser {
   void Feed(const std::wstring& line);
 };
 
-}  // namespace weasel
+}  // namespace fengyu

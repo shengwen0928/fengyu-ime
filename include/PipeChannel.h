@@ -5,7 +5,7 @@
 #include <boost/interprocess/streams/bufferstream.hpp>
 #include <boost/thread.hpp>
 
-namespace weasel {
+namespace fengyu {
 
 class PipeChannelBase {
  public:
@@ -160,4 +160,4 @@ class PipeChannel : public PipeChannelBase {
     return (buff_size - _ResSize) * sizeof(char) / sizeof(wchar_t);
   }
 };
-};  // namespace weasel
+};  // namespace fengyu

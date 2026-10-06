@@ -13,7 +13,7 @@ echo stopping service from an older version.
 call stop_service.bat
 
 echo configuring preset input schemas...
-WeaselDeployer.exe /install
+FengyuDeployer.exe /install
 
 echo administrative permissions required. detecting permissions...
 net session >nul 2>&1
@@ -24,7 +24,7 @@ if not %errorlevel% == 0 (
 )
 
 :register
-echo registering Weasel IME to your system.
+echo registering Fengyu IME to your system.
 echo install_option=%install_option%
 
 cscript check_windows_version.js
@@ -32,25 +32,25 @@ if errorlevel 2 goto win7_x64_install
 if errorlevel 1 goto xp_install
 
 :win7_install
-WeaselSetup.exe %install_option%
-rem regsvr32.exe /s "%CD%\weasel.dll"
+FengyuSetup.exe %install_option%
+rem regsvr32.exe /s "%CD%\fengyu.dll"
 goto next
 
 :win7_x64_install
-WeaselSetupx64.exe %install_option%
-rem regsvr32.exe /s "%CD%\weasel.dll"
-rem regsvr32.exe /s "%CD%\weaselx64.dll"
+FengyuSetupx64.exe %install_option%
+rem regsvr32.exe /s "%CD%\fengyu.dll"
+rem regsvr32.exe /s "%CD%\fengyux64.dll"
 goto next
 
 :xp_install
-WeaselSetup.exe %install_option%
+FengyuSetup.exe %install_option%
 goto next
 
 :next
-reg add "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run" /v WeaselServer /t REG_SZ /d "%CD%\WeaselServer.exe" /f
+reg add "HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run" /v FengyuServer /t REG_SZ /d "%CD%\FengyuServer.exe" /f
 
 :done
-start WeaselServer.exe
+start FengyuServer.exe
 
 if /i "%2" == "/register" pause
 echo installed.

@@ -14,7 +14,7 @@ import tempfile
 from pathlib import Path
 
 RIME_DIR = None  # None＝目前安裝的版本（main 執行時才尋找）
-USER_DIR = Path(os.environ['APPDATA']) / 'Rime'
+USER_DIR = Path(os.environ['APPDATA']) / 'Fengyu'
 BUILD_DIR = Path(__file__).resolve().parent.parent / 'output'  # --build 測試的編譯產出
 
 
@@ -68,7 +68,7 @@ def main(cases, build=False):
         rime_dir = BUILD_DIR
         user.mkdir()  # 空的使用者資料夾＝全新安裝
     else:
-        rime_dir = RIME_DIR or max(Path(r'C:/Program Files/Rime').glob('weasel-*'))
+        rime_dir = RIME_DIR or max(Path(r'C:/Program Files/Fengyu').glob('fengyu-*'))
         skip = ['*.userdb'] + (['*.gram'] if os.environ.get('FENGYU_NO_GRAMMAR') else [])  # 比較有無語言模型
         shutil.copytree(USER_DIR, user, ignore=shutil.ignore_patterns(*skip))
     os.add_dll_directory(str(rime_dir))
@@ -78,7 +78,7 @@ def main(cases, build=False):
     t.shared_data_dir = str(rime_dir / 'data').encode()
     t.user_data_dir = str(user).encode()
     t.distribution_name = b'fengyu-test'
-    t.distribution_code_name = b'Weasel'
+    t.distribution_code_name = b'Fengyu'
     t.distribution_version = b'0'
     t.app_name = b'rime.fengyu_test'
     t.min_log_level = 2

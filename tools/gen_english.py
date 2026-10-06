@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-RIME_DIR = max(Path(r'C:/Program Files/Rime').glob('weasel-*'))  # 目前安裝的版本
+RIME_DIR = max(Path(r'C:/Program Files/Fengyu').glob('fengyu-*'))  # 目前安裝的版本
 RIME_DATA = RIME_DIR / 'data'
 OUT = HERE.parent / 'rime' / 'lua' / 'fengyu_english.lua'
 

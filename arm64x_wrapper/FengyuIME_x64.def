@@ -1,0 +1,16 @@
+EXPORTS
+	ImeConversionList = fengyux64.ime.ImeConversionList
+	ImeConfigure = fengyux64.ime.ImeConfigure
+	ImeDestroy = fengyux64.ime.ImeDestroy
+	ImeEscape = fengyux64.ime.ImeEscape
+	ImeInquire = fengyux64.ime.ImeInquire
+	ImeProcessKey = fengyux64.ime.ImeProcessKey
+	ImeSelect = fengyux64.ime.ImeSelect
+	ImeSetActiveContext = fengyux64.ime.ImeSetActiveContext
+	ImeToAsciiEx = fengyux64.ime.ImeToAsciiEx
+	NotifyIME = fengyux64.ime.NotifyIME
+	ImeRegisterWord = fengyux64.ime.ImeRegisterWord
+	ImeUnregisterWord = fengyux64.ime.ImeUnregisterWord
+	ImeGetRegisterWordStyle = fengyux64.ime.ImeGetRegisterWordStyle
+	ImeEnumRegisterWord = fengyux64.ime.ImeEnumRegisterWord
+	ImeSetCompositionString = fengyux64.ime.ImeSetCompositionString

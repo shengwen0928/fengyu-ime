@@ -14,7 +14,7 @@ if ($h -or $help -eq "--help") {
   -os [string]                   default your running system if it's not set, Windows or macOS optional
   -build_variant [string]        default msvc for Windows, universal for macOS. clang and mingw are optional for Windows too
   -extract [boolean]             default false, 7z in PATH is required
-  -use [string]                  dev is for building weasel, weasel is for common usage in weasel(update rime.dll)
+  -use [string]                  dev is for building fengyu, fengyu is for common usage in fengyu(update rime.dll)
 
   All these params are optional.
   To use some kind of mirror of github, set it up in ~/.git-rime.conf.ps1
@@ -71,7 +71,7 @@ if ($os -eq "Windows") {
   if (!$build_variant -or ($build_variant -eq "msvc")) {
     $build_variant = "msvc"
     $pattern = ""
-    if ($use -eq "weasel") {
+    if ($use -eq "fengyu") {
       $pattern = "rime-[0-9a-fA-F]+-" + $os + "-" + $build_variant + "-x(64|86)\.7z"
     } else {
       $pattern = "rime-(deps-)?[0-9a-fA-F]+-" + $os + "-" + $build_variant + "-x(64|86)\.7z"
@@ -87,7 +87,7 @@ if ($os -eq "Windows") {
   $pattern = "rime-(deps-)?[0-9a-fA-F]+-" + $os + "-" + $build_variant + "\.tar.bz2"
   $home_dir = $HOME
 }
-if ($PSBoundParameters.ContainsKey("use") -and ($use -eq "weasel" -or $use -eq "dev")) {
+if ($PSBoundParameters.ContainsKey("use") -and ($use -eq "fengyu" -or $use -eq "dev")) {
   $extract = $true
 }
 # -Parallel require Powershell 7.0 or greater, default try to use it
@@ -194,7 +194,7 @@ function Is64Bit {
     }
   }
 }
-if ($os -eq "Windows" -and $use -eq "weasel") {
+if ($os -eq "Windows" -and $use -eq "fengyu") {
   if (Is64Bit) {
     $pattern = "rime-[0-9a-fA-F]+-" + $os + "-" + $build_variant + "-x64\.7z"
   } else {
@@ -316,8 +316,8 @@ if ($null -ne $response.assets -and $response.assets.Count -gt 0) {
           Write-Host "☑  $(Split-Path $src -Leaf)\$subpath has been copied to $dest"
         }
       }
-      function KillWeaselServer {
-        $processName = "WeaselServer"
+      function KillFengyuServer {
+        $processName = "FengyuServer"
         $process = Get-Process $processName -ErrorAction SilentlyContinue
         while ($process) {
           if ($process) {
@@ -334,7 +334,7 @@ if ($null -ne $response.assets -and $response.assets.Count -gt 0) {
         if ((Test-Path ".\include") `
         -and (Test-Path ".\lib") -and (Test-Path ".\lib64") `
         -and (Test-Path ".\output\Win32")) {
-          KillWeaselServer
+          KillFengyuServer
           Remove-Item include\rime_*.h -ErrorAction SilentlyContinue
           MyCopyItem -src $dir86 -subpath "dist\include\rime_*.h" -dest "include\"
           MyCopyItem -src $dir86 -subpath "dist\lib\rime.lib"     -dest "lib\"
@@ -347,34 +347,34 @@ if ($null -ne $response.assets -and $response.assets.Count -gt 0) {
           Remove-Item -Path $dir64 -Recurse -Force -Confirm:$false -ErrorAction SilentlyContinue
           Remove-Item -Path $dir86 -Recurse -Force -Confirm:$false -ErrorAction SilentlyContinue
         } else {
-          Write-Host "❌ current directory is not a weasel source directory"
+          Write-Host "❌ current directory is not a fengyu source directory"
         }
-      } elseif ($use -eq "weasel") {
+      } elseif ($use -eq "fengyu") {
         if ([Environment]::Is64BitOperatingSystem) {
-          $registryPath = "HKLM:\SOFTWARE\WOW6432Node\Rime\Weasel"
+          $registryPath = "HKLM:\SOFTWARE\WOW6432Node\Fengyu\IME"
         } else {
-          $registryPath = "HKLM:\SOFTWARE\Rime\Weasel"
+          $registryPath = "HKLM:\SOFTWARE\Fengyu\IME"
         }
         try {
-          $weaselRoot = (Get-ItemProperty -Path $registryPath -ErrorAction Stop).'WeaselRoot'
-          $servercmd = Join-Path -Path $weaselRoot -ChildPath "WeaselServer.exe"
-          KillWeaselServer
-          $processName = "WeaselServer"
+          $fengyuRoot = (Get-ItemProperty -Path $registryPath -ErrorAction Stop).'FengyuRoot'
+          $servercmd = Join-Path -Path $fengyuRoot -ChildPath "FengyuServer.exe"
+          KillFengyuServer
+          $processName = "FengyuServer"
           $dllbit64 = Is64Bit
-          MyCopyItem -src $(if ($dllbit64) { $dir64 } else { $dir86 }) -subpath "dist\lib\rime.dll" -dest $weaselRoot
-          MyCopyItem -src $(if ($dllbit64) { $dir64 } else { $dir86 }) -subpath "dist\lib\rime.pdb" -dest $weaselRoot
+          MyCopyItem -src $(if ($dllbit64) { $dir64 } else { $dir86 }) -subpath "dist\lib\rime.dll" -dest $fengyuRoot
+          MyCopyItem -src $(if ($dllbit64) { $dir64 } else { $dir86 }) -subpath "dist\lib\rime.pdb" -dest $fengyuRoot
           if ($dllbit64) {
             Remove-Item -Path $dir64 -Recurse -Force -Confirm:$false -ErrorAction SilentlyContinue
           } else {
             Remove-Item -Path $dir86 -Recurse -Force -Confirm:$false -ErrorAction SilentlyContinue
           }
-          Start-Process $servercmd -WorkingDirectory $weaselRoot
+          Start-Process $servercmd -WorkingDirectory $fengyuRoot
           if ($(Get-Process $processName -ErrorAction SilentlyContinue)) {
             Write-Host "☑  $processName has been started"
           }
         } catch [System.UnauthorizedAccessException] {
           Write-Host "❗ $_ please run as Administrator!"
-          Start-Process $servercmd -WorkingDirectory $weaselRoot
+          Start-Process $servercmd -WorkingDirectory $fengyuRoot
           Write-Host "☑  $processName started"
           SafeExit
         } catch {

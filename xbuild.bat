@@ -18,41 +18,41 @@ rem ---------------------------------------------------------------------------
 if not exist env.bat copy env.bat.template env.bat
 if exist env.bat call env.bat
 set PRODUCT_VERSION=
-if not defined WEASEL_ROOT set WEASEL_ROOT=%CD%
+if not defined FENGYU_ROOT set FENGYU_ROOT=%CD%
 if not defined VERSION_MAJOR set VERSION_MAJOR=0
 if not defined VERSION_MINOR set VERSION_MINOR=17
 if not defined VERSION_PATCH set VERSION_PATCH=4
 
-if not defined WEASEL_VERSION set WEASEL_VERSION=%VERSION_MAJOR%.%VERSION_MINOR%.%VERSION_PATCH%
-if not defined WEASEL_BUILD set WEASEL_BUILD=0
+if not defined FENGYU_VERSION set FENGYU_VERSION=%VERSION_MAJOR%.%VERSION_MINOR%.%VERSION_PATCH%
+if not defined FENGYU_BUILD set FENGYU_BUILD=0
 
 rem use numeric build version for release build
-set PRODUCT_VERSION=%WEASEL_VERSION%.%WEASEL_BUILD%
+set PRODUCT_VERSION=%FENGYU_VERSION%.%FENGYU_BUILD%
 rem for non-release build, try to use git commit hash as product build version
 if not defined RELEASE_BUILD (
   rem check if git is installed and available, then get the short commit id of head
   git --version >nul 2>&1
   if not errorlevel 1 (
-    for /f "delims=" %%i in ('git tag --sort=-creatordate ^| findstr /r "%WEASEL_VERSION%"') do (
+    for /f "delims=" %%i in ('git tag --sort=-creatordate ^| findstr /r "%FENGYU_VERSION%"') do (
       set LAST_TAG=%%i
       goto found_tag
     )
     :found_tag
     for /f "delims=" %%i in ('git rev-list %LAST_TAG%..HEAD --count') do (
-      set WEASEL_BUILD=%%i
+      set FENGYU_BUILD=%%i
     )
     rem get short commmit id of head
-    for /F %%i in ('git rev-parse --short HEAD') do (set PRODUCT_VERSION=%WEASEL_VERSION%.%WEASEL_BUILD%.%%i)
+    for /F %%i in ('git rev-parse --short HEAD') do (set PRODUCT_VERSION=%FENGYU_VERSION%.%FENGYU_BUILD%.%%i)
   )
 )
 
 rem FILE_VERSION is always 4 numbers; same as PRODUCT_VERSION in release build
-if not defined FILE_VERSION set FILE_VERSION=%WEASEL_VERSION%.%WEASEL_BUILD%
+if not defined FILE_VERSION set FILE_VERSION=%FENGYU_VERSION%.%FENGYU_BUILD%
 echo PRODUCT_VERSION=%PRODUCT_VERSION%
-echo WEASEL_VERSION=%WEASEL_VERSION%
-echo WEASEL_BUILD=%WEASEL_BUILD%
-echo WEASEL_ROOT=%WEASEL_ROOT%
-echo WEASEL_BUNDLED_RECIPES=%WEASEL_BUNDLED_RECIPES%
+echo FENGYU_VERSION=%FENGYU_VERSION%
+echo FENGYU_BUILD=%FENGYU_BUILD%
+echo FENGYU_ROOT=%FENGYU_ROOT%
+echo FENGYU_BUNDLED_RECIPES=%FENGYU_BUNDLED_RECIPES%
 echo BOOST_ROOT=%BOOST_ROOT%
 
 if defined GITHUB_ENV (
@@ -70,7 +70,7 @@ set build_data=0
 set build_opencc=0
 set build_rime=0
 set rime_build_variant=release
-set build_weasel=0
+set build_fengyu=0
 set build_installer=0
 set build_arm64=0
 set build_clean=0
@@ -93,7 +93,7 @@ set build_commands=0
   if "%1" == "opencc" set build_opencc=1
   if "%1" == "rime" set build_rime=1
   if "%1" == "librime" set build_rime=1
-  if "%1" == "weasel" set build_weasel=1
+  if "%1" == "fengyu" set build_fengyu=1
   if "%1" == "installer" set build_installer=1
   if "%1" == "arm64" set build_arm64=1
   if "%1" == "clean" set build_clean=1
@@ -103,7 +103,7 @@ set build_commands=0
     set build_data=1
     set build_opencc=1
     set build_rime=1
-    set build_weasel=1
+    set build_fengyu=1
     set build_installer=1
     set build_arm64=1
     set build_commands=1
@@ -112,19 +112,19 @@ set build_commands=0
   goto parse_cmdline_options
 :end_parsing_cmdline_options
 
-if %build_weasel% == 0 (
+if %build_fengyu% == 0 (
 if %build_boost% == 0 (
 if %build_data% == 0 (
 if %build_opencc% == 0 (
 if %build_rime% == 0 (
 if %build_commands% == 0 (
-  set build_weasel=1
+  set build_fengyu=1
 ))))))
 rem 
-rem quit WeaselServer.exe before building
-cd /d %WEASEL_ROOT%
-if exist output\weaselserver.exe (
-  output\weaselserver.exe /q
+rem quit FengyuServer.exe before building
+cd /d %FENGYU_ROOT%
+if exist output\fengyuserver.exe (
+  output\fengyuserver.exe /q
 )
 
 rem build booost
@@ -135,22 +135,22 @@ if %build_boost% == 1 (
     call build.bat boost
   )
   if errorlevel 1 exit /b 1
-  cd /d %WEASEL_ROOT%
+  cd /d %FENGYU_ROOT%
 )
 if %build_rime% == 1 (
   call build.bat rime
   if errorlevel 1 exit /b 1
-  cd /d %WEASEL_ROOT%
+  cd /d %FENGYU_ROOT%
 )
 if %build_data% == 1 (
   call build.bat data
   if errorlevel 1 exit /b 1
-  cd /d %WEASEL_ROOT%
+  cd /d %FENGYU_ROOT%
 )
 if %build_opencc% == 1 (
   call build.bat opencc
   if errorlevel 1 exit /b 1
-  cd /d %WEASEL_ROOT%
+  cd /d %FENGYU_ROOT%
 )
 
 if %build_commands% == 1 (
@@ -160,7 +160,7 @@ if %build_commands% == 1 (
 
 rem if to clean
 if %build_clean% == 1 ( goto clean )
-if %build_weasel% == 0 ( goto end )
+if %build_fengyu% == 0 ( goto end )
 
 if %build_arm64% == 1 (
   xmake f -a arm64 -m %build_config%
@@ -187,15 +187,15 @@ if %build_arm64% == 1 (
   if errorlevel 1 goto error
   popd
 
-  copy arm64x_wrapper\weaselARM64X.dll output
+  copy arm64x_wrapper\fengyuARM64X.dll output
   if errorlevel 1 goto error
-  copy arm64x_wrapper\weaselARM64X.ime output
+  copy arm64x_wrapper\fengyuARM64X.ime output
   if errorlevel 1 goto error
 )
 if %build_installer% == 1 (
   "%ProgramFiles(x86)%"\NSIS\Bin\makensis.exe ^
-  /DWEASEL_VERSION=%WEASEL_VERSION% ^
-  /DWEASEL_BUILD=%WEASEL_BUILD% ^
+  /DFENGYU_VERSION=%FENGYU_VERSION% ^
+  /DFENGYU_BUILD=%FENGYU_BUILD% ^
   /DPRODUCT_VERSION=%PRODUCT_VERSION% ^
   output\install.nsi
   if errorlevel 1 goto error
@@ -206,16 +206,16 @@ goto end
   if exist build (
     rmdir /s /q build
     if errorlevel 1 (
-      echo error cleaning weasel build
+      echo error cleaning fengyu build
       goto error
     )
     goto end
   )
 
 :error
-  echo error building weasel...
+  echo error building fengyu...
   exit /b 1
   
 :end
-  cd %WEASEL_ROOT%
+  cd %FENGYU_ROOT%
 

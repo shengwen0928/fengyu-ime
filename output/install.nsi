@@ -1,4 +1,4 @@
-; weasel installation script
+; fengyu installation script
 !include FileFunc.nsh
 !include LogicLib.nsh
 !include MUI2.nsh
@@ -10,33 +10,33 @@ Unicode true
 ;--------------------------------
 ; General
 
-!ifndef WEASEL_VERSION
-!define WEASEL_VERSION 0.1.0
+!ifndef FENGYU_VERSION
+!define FENGYU_VERSION 0.1.0
 !endif
 
-!ifndef WEASEL_BUILD
-!define WEASEL_BUILD 0
+!ifndef FENGYU_BUILD
+!define FENGYU_BUILD 0
 !endif
 
-!define WEASEL_ROOT $INSTDIR\weasel-${WEASEL_VERSION}
-!define REG_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Weasel"
+!define FENGYU_ROOT $INSTDIR\fengyu-${FENGYU_VERSION}
+!define REG_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Fengyu"
 
 ; The name of the installer
-Name "風語輸入法 ${WEASEL_VERSION}"
+Name "風語輸入法 ${FENGYU_VERSION}"
 
 ; The file to write
 OutFile "archives\fengyu-ime-${PRODUCT_VERSION}-installer.exe"
 
-VIProductVersion "${WEASEL_VERSION}.${WEASEL_BUILD}"
+VIProductVersion "${FENGYU_VERSION}.${FENGYU_BUILD}"
 VIAddVersionKey /LANG=2052 "ProductName" "風語輸入法"
 VIAddVersionKey /LANG=2052 "Comments" "AIW 風光Ai窗"
 VIAddVersionKey /LANG=2052 "CompanyName" "AIW 風光Ai窗"
 VIAddVersionKey /LANG=2052 "LegalCopyright" "AIW 風光Ai窗"
 VIAddVersionKey /LANG=2052 "FileDescription" "風語輸入法"
-VIAddVersionKey /LANG=2052 "FileVersion" "${WEASEL_VERSION}"
+VIAddVersionKey /LANG=2052 "FileVersion" "${FENGYU_VERSION}"
 
-!define MUI_ICON ..\resource\weasel.ico
-!define MUI_UNICON ..\resource\weasel.ico
+!define MUI_ICON ..\resource\fengyu.ico
+!define MUI_UNICON ..\resource\fengyu.ico
 SetCompressor /SOLID lzma
 
 
@@ -94,19 +94,19 @@ LangString SYSTEMVERSIONNOTOK ${LANG_SIMPCHINESE} "您的系統不被支持，�
 LangString AUTOCHKUPDATE ${LANG_SIMPCHINESE} "自动检查版本更新？"
 
 !insertmacro MUI_LANGUAGE "English"
-LangString DISPLAYNAME ${LANG_ENGLISH} "Weasel"
-LangString LNKFORMANUAL ${LANG_ENGLISH} "Weasel Manual"
-LangString LNKFORSETTING ${LANG_ENGLISH} "Weasel Settings"
-LangString LNKFORDICT ${LANG_ENGLISH} "Weasel Dictionary Manager"
-LangString LNKFORSYNC ${LANG_ENGLISH} "Weasel Sync User Profile"
-LangString LNKFORDEPLOY ${LANG_ENGLISH} "Weasel Deploy"
-LangString LNKFORSERVER ${LANG_ENGLISH} "Weasel Server"
-LangString LNKFORUSERFOLDER ${LANG_ENGLISH} "Weasel User Folder"
-LangString LNKFORAPPFOLDER ${LANG_ENGLISH} "Weasel App Folder"
-LangString LNKFORUPDATER ${LANG_ENGLISH} "Weasel Check for Updates"
-LangString LNKFORSETUP ${LANG_ENGLISH} "Weasel Installation Preference"
-LangString LNKFORUNINSTALL ${LANG_ENGLISH} "Uninstall Weasel"
-LangString CONFIRMATION ${LANG_ENGLISH} "Before installation, please uninstall the old version of Weasel.$\n$\nPress 'OK' to remove the old version, or 'Cancel' to abort installation."
+LangString DISPLAYNAME ${LANG_ENGLISH} "Fengyu"
+LangString LNKFORMANUAL ${LANG_ENGLISH} "Fengyu Manual"
+LangString LNKFORSETTING ${LANG_ENGLISH} "Fengyu Settings"
+LangString LNKFORDICT ${LANG_ENGLISH} "Fengyu Dictionary Manager"
+LangString LNKFORSYNC ${LANG_ENGLISH} "Fengyu Sync User Profile"
+LangString LNKFORDEPLOY ${LANG_ENGLISH} "Fengyu Deploy"
+LangString LNKFORSERVER ${LANG_ENGLISH} "Fengyu Server"
+LangString LNKFORUSERFOLDER ${LANG_ENGLISH} "Fengyu User Folder"
+LangString LNKFORAPPFOLDER ${LANG_ENGLISH} "Fengyu App Folder"
+LangString LNKFORUPDATER ${LANG_ENGLISH} "Fengyu Check for Updates"
+LangString LNKFORSETUP ${LANG_ENGLISH} "Fengyu Installation Preference"
+LangString LNKFORUNINSTALL ${LANG_ENGLISH} "Uninstall Fengyu"
+LangString CONFIRMATION ${LANG_ENGLISH} "Before installation, please uninstall the old version of Fengyu.$\n$\nPress 'OK' to remove the old version, or 'Cancel' to abort installation."
 LangString SYSTEMVERSIONNOTOK ${LANG_ENGLISH} "Your system not supported, minimium system required: Windows 8.1!"
 LangString AUTOCHKUPDATE ${LANG_ENGLISH} "Automatically check for updates?"
 
@@ -121,29 +121,29 @@ toquit:
     Quit
   ${EndIf}
 
-  ReadRegStr $R0 HKLM "Software\Rime\Weasel" "InstallDir"
+  ReadRegStr $R0 HKLM "Software\Fengyu\IME" "InstallDir"
   StrCmp $R0 "" 0 skip
   ; The default installation directory
   ; install x64 build for NativeARM64_WINDOWS11 and NativeAMD64_WINDOWS11
   ${If} ${AtLeastWin11} ; Windows 11 and above
     ${If} ${IsNativeARM64}
-      StrCpy $INSTDIR "$PROGRAMFILES64\Rime"
+      StrCpy $INSTDIR "$PROGRAMFILES64\Fengyu"
     ${ElseIf} ${IsNativeAMD64}
-      StrCpy $INSTDIR "$PROGRAMFILES64\Rime"
+      StrCpy $INSTDIR "$PROGRAMFILES64\Fengyu"
     ${Else}
-      StrCpy $INSTDIR "$PROGRAMFILES\Rime"
+      StrCpy $INSTDIR "$PROGRAMFILES\Fengyu"
     ${Endif}
   ; install x64 build for NativeAMD64_BELLOW_WINDOWS11
   ${Else} ; Windows 10 or bellow
     ${If} ${IsNativeAMD64}
-      StrCpy $INSTDIR "$PROGRAMFILES64\Rime"
+      StrCpy $INSTDIR "$PROGRAMFILES64\Fengyu"
     ${Else}
-      StrCpy $INSTDIR "$PROGRAMFILES\Rime"
+      StrCpy $INSTDIR "$PROGRAMFILES\Fengyu"
     ${Endif}
   ${Endif}
 skip:
   ReadRegStr $R0 HKLM \
-  "Software\Microsoft\Windows\CurrentVersion\Uninstall\Weasel" \
+  "Software\Microsoft\Windows\CurrentVersion\Uninstall\Fengyu" \
   "UninstallString"
   StrCmp $R0 "" done
 
@@ -154,25 +154,25 @@ skip:
 
 uninst:
   ; Backup data directory from previous installation, user files may exist
-  ReadRegStr $R1 HKLM SOFTWARE\Rime\Weasel "WeaselRoot"
+  ReadRegStr $R1 HKLM SOFTWARE\Fengyu\IME "FengyuRoot"
   StrCmp $R1 "" call_uninstaller
   IfFileExists $R1\data\*.* 0 call_uninstaller
-  CreateDirectory $TEMP\weasel-backup
-  CopyFiles $R1\data\*.* $TEMP\weasel-backup
+  CreateDirectory $TEMP\fengyu-backup
+  CopyFiles $R1\data\*.* $TEMP\fengyu-backup
 
 call_uninstaller:
-  ExecWait '"$R1\WeaselServer.exe" /quit'
-  ExecWait '"$R1\WeaselSetup.exe" /u'
+  ExecWait '"$R1\FengyuServer.exe" /quit'
+  ExecWait '"$R1\FengyuSetup.exe" /u'
   ; Remove registry keys
-  DeleteRegKey HKLM SOFTWARE\Rime
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Weasel"
+  DeleteRegKey HKLM SOFTWARE\Fengyu
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Fengyu"
   ; don't redirect on 64 bit system for auto run setting
   ${If} ${IsNativeARM64}
     SetRegView 64
   ${ElseIf} ${IsNativeAMD64}
     SetRegView 64
   ${Endif}
-  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "WeaselServer"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "FengyuServer"
   ; recover back to 32bit view
   SetRegView 32
   ; Remove files and uninstaller
@@ -198,32 +198,32 @@ FunctionEnd
 
 ; Registry key to check for directory (so if you install again, it will
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM "Software\Rime\Weasel" "InstallDir"
+InstallDirRegKey HKLM "Software\Fengyu\IME" "InstallDir"
 
 ; The stuff to install
-Section "Weasel"
+Section "Fengyu"
 
   SectionIn RO
 
   ; Write the new installation path into the registry
   ; redirect on 64 bit system
-  ; HKLM SOFTWARE\WOW6432Node\Rime\Weasel "InstallDir" "$INSTDIR"
-  WriteRegStr HKLM SOFTWARE\Rime\Weasel "InstallDir" "$INSTDIR"
+  ; HKLM SOFTWARE\WOW6432Node\Fengyu\IME "InstallDir" "$INSTDIR"
+  WriteRegStr HKLM SOFTWARE\Fengyu\IME "InstallDir" "$INSTDIR"
 
   ; Reset INSTDIR for the new version
-  StrCpy $INSTDIR "${WEASEL_ROOT}"
+  StrCpy $INSTDIR "${FENGYU_ROOT}"
 
-  IfFileExists "$INSTDIR\WeaselServer.exe" 0 +2
-  ExecWait '"$INSTDIR\WeaselServer.exe" /quit'
+  IfFileExists "$INSTDIR\FengyuServer.exe" 0 +2
+  ExecWait '"$INSTDIR\FengyuServer.exe" /quit'
 
   SetOverwrite try
   ; Set output path to the installation directory.
   SetOutPath $INSTDIR
 
-  IfFileExists $TEMP\weasel-backup\*.* 0 program_files
+  IfFileExists $TEMP\fengyu-backup\*.* 0 program_files
   CreateDirectory $INSTDIR\data
-  CopyFiles $TEMP\weasel-backup\*.* $INSTDIR\data
-  RMDir /r $TEMP\weasel-backup
+  CopyFiles $TEMP\fengyu-backup\*.* $INSTDIR\data
+  RMDir /r $TEMP\fengyu-backup
 
 program_files:
   File "README.txt"
@@ -235,58 +235,58 @@ program_files:
   File "rime-install-config.bat"
   File "start_service.bat"
   File "stop_service.bat"
-  File "weasel.dll"
+  File "fengyu.dll"
   ${If} ${RunningX64}
-    File "weaselx64.dll"
+    File "fengyux64.dll"
   ${EndIf}
   ${If} ${IsNativeARM64}
-    File /nonfatal "weaselARM.dll"
-    File /nonfatal "weaselARM64.dll"
-    File /nonfatal "weaselARM64X.dll"
+    File /nonfatal "fengyuARM.dll"
+    File /nonfatal "fengyuARM64.dll"
+    File /nonfatal "fengyuARM64X.dll"
   ${EndIf}
-  File "weasel.ime"
+  File "fengyu.ime"
   ${If} ${RunningX64}
-    File "weaselx64.ime"
+    File "fengyux64.ime"
   ${EndIf}
   ${If} ${IsNativeARM64}
-    File /nonfatal "weaselARM.ime"
-    File /nonfatal "weaselARM64.ime"
-    File /nonfatal "weaselARM64X.ime"
+    File /nonfatal "fengyuARM.ime"
+    File /nonfatal "fengyuARM64.ime"
+    File /nonfatal "fengyuARM64X.ime"
   ${EndIf}
   ; install x64 build for NativeARM64_WINDOWS11 and NativeAMD64_WINDOWS11
   ${If} ${AtLeastWin11} ; Windows 11 and above
     ${If} ${IsNativeARM64}
-      File "WeaselDeployer.exe"
-      File "WeaselServer.exe"
+      File "FengyuDeployer.exe"
+      File "FengyuServer.exe"
       File "rime.dll"
       File "WinSparkle.dll"
     ${ElseIf} ${IsNativeAMD64}
-      File "WeaselDeployer.exe"
-      File "WeaselServer.exe"
+      File "FengyuDeployer.exe"
+      File "FengyuServer.exe"
       File "rime.dll"
       File "WinSparkle.dll"
     ${Else}
-      File "Win32\WeaselDeployer.exe"
-      File "Win32\WeaselServer.exe"
+      File "Win32\FengyuDeployer.exe"
+      File "Win32\FengyuServer.exe"
       File "Win32\rime.dll"
       File "Win32\WinSparkle.dll"
     ${Endif}
   ; install x64 build for NativeAMD64_BELLOW_WINDOWS11
   ${Else} ; Windows 10 or bellow
     ${If} ${IsNativeAMD64}
-      File "WeaselDeployer.exe"
-      File "WeaselServer.exe"
+      File "FengyuDeployer.exe"
+      File "FengyuServer.exe"
       File "rime.dll"
       File "WinSparkle.dll"
     ${Else}
-      File "Win32\WeaselDeployer.exe"
-      File "Win32\WeaselServer.exe"
+      File "Win32\FengyuDeployer.exe"
+      File "Win32\FengyuServer.exe"
       File "Win32\rime.dll"
       File "Win32\WinSparkle.dll"
     ${Endif}
   ${Endif}
 
-  File "WeaselSetup.exe"
+  File "FengyuSetup.exe"
   ; shared data files
   SetOutPath $INSTDIR\data
   File "data\*.yaml"
@@ -316,12 +316,12 @@ program_files:
   IfErrors +2 0
   StrCpy $R2 "/t"
 
-  ExecWait '"$INSTDIR\WeaselSetup.exe" $R2'
+  ExecWait '"$INSTDIR\FengyuSetup.exe" $R2'
 
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayName" "$(DISPLAYNAME)"
-  WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayIcon" '"$INSTDIR\WeaselServer.exe"'
-  WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayVersion" "${WEASEL_VERSION}.${WEASEL_BUILD}"
+  WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayIcon" '"$INSTDIR\FengyuServer.exe"'
+  WriteRegStr HKLM "${REG_UNINST_KEY}" "DisplayVersion" "${FENGYU_VERSION}.${FENGYU_BUILD}"
   WriteRegStr HKLM "${REG_UNINST_KEY}" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "${REG_UNINST_KEY}" "Publisher" "AIW 風光Ai窗"
   WriteRegDWORD HKLM "${REG_UNINST_KEY}" "NoModify" 1
@@ -330,11 +330,11 @@ program_files:
 
   ; run as user...
   IfSilent deploy_silently
-  ExecWait "$INSTDIR\WeaselDeployer.exe /install"
+  ExecWait "$INSTDIR\FengyuDeployer.exe /install"
   GoTo deploy_done
 
   deploy_silently:
-  ExecWait "$INSTDIR\WeaselDeployer.exe /deploy"
+  ExecWait "$INSTDIR\FengyuDeployer.exe /deploy"
   deploy_done:
 
   ; don't redirect on 64 bit system for auto run setting
@@ -344,18 +344,18 @@ program_files:
     SetRegView 64
   ${Endif}
   ; Write autorun key
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "WeaselServer" "$INSTDIR\WeaselServer.exe"
-  ; Start WeaselServer
-  Exec "$INSTDIR\WeaselServer.exe"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "FengyuServer" "$INSTDIR\FengyuServer.exe"
+  ; Start FengyuServer
+  Exec "$INSTDIR\FengyuServer.exe"
 
   ; option CheckForUpdates
   IfSilent DisableAutoCheckUpdate
   MessageBox MB_YESNO|MB_ICONINFORMATION "$(AUTOCHKUPDATE)" IDYES EnableAutoCheckUpdate
   DisableAutoCheckUpdate:
-  WriteRegStr HKCU "Software\Rime\Weasel\Updates" "CheckForUpdates" "0"
+  WriteRegStr HKCU "Software\Fengyu\IME\Updates" "CheckForUpdates" "0"
   GoTo end
   EnableAutoCheckUpdate:
-  WriteRegStr HKCU "Software\Rime\Weasel\Updates" "CheckForUpdates" "1"
+  WriteRegStr HKCU "Software\Fengyu\IME\Updates" "CheckForUpdates" "1"
   end:
 
   ; Prompt reboot
@@ -369,15 +369,15 @@ Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\$(DISPLAYNAME)"
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORMANUAL).lnk" "$INSTDIR\README.txt"
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSETTING).lnk" "$INSTDIR\WeaselDeployer.exe" "" "$SYSDIR\shell32.dll" 21
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORDICT).lnk" "$INSTDIR\WeaselDeployer.exe" "/dict" "$SYSDIR\shell32.dll" 6
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSYNC).lnk" "$INSTDIR\WeaselDeployer.exe" "/sync" "$SYSDIR\shell32.dll" 26
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORDEPLOY).lnk" "$INSTDIR\WeaselDeployer.exe" "/deploy" "$SYSDIR\shell32.dll" 144
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSERVER).lnk" "$INSTDIR\WeaselServer.exe" "" "$INSTDIR\WeaselServer.exe" 0
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUSERFOLDER).lnk" "$INSTDIR\WeaselServer.exe" "/userdir" "$SYSDIR\shell32.dll" 126
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORAPPFOLDER).lnk" "$INSTDIR\WeaselServer.exe" "/weaseldir" "$SYSDIR\shell32.dll" 19
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUPDATER).lnk" "$INSTDIR\WeaselServer.exe" "/update" "$SYSDIR\shell32.dll" 13
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSETUP).lnk" "$INSTDIR\WeaselSetup.exe" "" "$SYSDIR\shell32.dll" 162
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSETTING).lnk" "$INSTDIR\FengyuDeployer.exe" "" "$SYSDIR\shell32.dll" 21
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORDICT).lnk" "$INSTDIR\FengyuDeployer.exe" "/dict" "$SYSDIR\shell32.dll" 6
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSYNC).lnk" "$INSTDIR\FengyuDeployer.exe" "/sync" "$SYSDIR\shell32.dll" 26
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORDEPLOY).lnk" "$INSTDIR\FengyuDeployer.exe" "/deploy" "$SYSDIR\shell32.dll" 144
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSERVER).lnk" "$INSTDIR\FengyuServer.exe" "" "$INSTDIR\FengyuServer.exe" 0
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUSERFOLDER).lnk" "$INSTDIR\FengyuServer.exe" "/userdir" "$SYSDIR\shell32.dll" 126
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORAPPFOLDER).lnk" "$INSTDIR\FengyuServer.exe" "/fengyudir" "$SYSDIR\shell32.dll" 19
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUPDATER).lnk" "$INSTDIR\FengyuServer.exe" "/update" "$SYSDIR\shell32.dll" 13
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSETUP).lnk" "$INSTDIR\FengyuSetup.exe" "" "$SYSDIR\shell32.dll" 162
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUNINSTALL).lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 
 SectionEnd
@@ -388,20 +388,20 @@ SectionEnd
 
 Section "Uninstall"
 
-  ExecWait '"$INSTDIR\WeaselServer.exe" /quit'
+  ExecWait '"$INSTDIR\FengyuServer.exe" /quit'
 
-  ExecWait '"$INSTDIR\WeaselSetup.exe" /u'
+  ExecWait '"$INSTDIR\FengyuSetup.exe" /u'
 
   ; Remove registry keys
-  DeleteRegKey HKLM SOFTWARE\Rime
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Weasel"
+  DeleteRegKey HKLM SOFTWARE\Fengyu
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Fengyu"
   ; don't redirect on 64 bit system for auto run setting
   ${If} ${IsNativeARM64}
     SetRegView 64
   ${ElseIf} ${IsNativeAMD64}
     SetRegView 64
   ${Endif}
-  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "WeaselServer"
+  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "FengyuServer"
 
   ; Remove files and uninstaller
   SetOutPath $TEMP

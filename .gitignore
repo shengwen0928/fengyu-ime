@@ -20,7 +20,7 @@ compile_commands.json
 /output/Win32/*.lib
 /output/*.exe
 /output/rime.dll
-/output/weasel*.dll
+/output/fengyu*.dll
 /output/*.ime
 /output/*.txt
 /output/*.bat
@@ -32,7 +32,7 @@ compile_commands.json
 /include/rime*.h
 /ipch
 env.bat
-weasel.props
+fengyu.props
 *.log
 *.user
 *.suo

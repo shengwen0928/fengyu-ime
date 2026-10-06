@@ -1,5 +1,5 @@
 -- 工作区的xmake.lua
-set_project("weasel")
+set_project("fengyu")
 
 -- 定义全局变量
 set_xmakever("2.9.4")
@@ -45,18 +45,18 @@ end
 
 add_links("atls", "shell32", "advapi32", "gdi32", "user32", "uuid", "ole32")
 
-includes("WeaselIPC", "WeaselUI", "WeaselTSF", "WeaselIME")
+includes("FengyuIPC", "FengyuUI", "FengyuTSF", "FengyuIME")
 
 if is_arch("x64") or is_arch("x86") then
-  includes("RimeWithWeasel", "WeaselIPCServer", "WeaselServer", "WeaselDeployer")
+  includes("RimeWithFengyu", "FengyuIPCServer", "FengyuServer", "FengyuDeployer")
 end
 
 if is_arch("x86") then
-  includes("WeaselSetup")
+  includes("FengyuSetup")
 end
 
 if is_mode("debug") then
-  includes("test/TestWeaselIPC")
+  includes("test/TestFengyuIPC")
   includes("test/TestResponseParser")
 else
   add_cxflags("/GL")
@@ -82,20 +82,20 @@ rule("add_rcfiles")
       "PRODUCT_VERSION=" .. os.getenv("PRODUCT_VERSION")
     }})
   end)
-rule("use_weaselconstants")
+rule("use_fengyuconstants")
   on_load(function(target)
-    function check_include_weasel_constants_in_dir(dir)
+    function check_include_fengyu_constants_in_dir(dir)
       local files = os.files(path.join(dir, "**.h"))
       table.join2(files, os.files(path.join(dir, "**.cpp")))
       for _, file in ipairs(files) do
         local content = io.readfile(file)
-        if content:find('#include%s+"WeaselConstants%.h"') or content:find('#include%s+<WeaselConstants%.h>') then
+        if content:find('#include%s+"FengyuConstants%.h"') or content:find('#include%s+<FengyuConstants%.h>') then
           return true
         end
       end
       return false
     end
-    if check_include_weasel_constants_in_dir(target:scriptdir()) then
+    if check_include_fengyu_constants_in_dir(target:scriptdir()) then
       target:add("defines", {
         "VERSION_MAJOR=" .. os.getenv("VERSION_MAJOR"),
         "VERSION_MINOR=" .. os.getenv("VERSION_MINOR"),

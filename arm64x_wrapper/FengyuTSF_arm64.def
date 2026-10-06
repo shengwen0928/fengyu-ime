@@ -1,0 +1,5 @@
+EXPORTS
+	DllGetClassObject = fengyuARM64.dll.DllGetClassObject
+	DllCanUnloadNow = fengyuARM64.dll.DllCanUnloadNow
+	DllRegisterServer = fengyuARM64.dll.DllRegisterServer
+	DllUnregisterServer = fengyuARM64.dll.DllUnregisterServer

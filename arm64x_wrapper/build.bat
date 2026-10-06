@@ -9,17 +9,17 @@ REM Build dummy object files
 cl.exe /c /Fo:dummy.o dummy.c || exit /b 1
 cl.exe /c /arm64EC /Fo:dummy_x64.o dummy.c || exit /b 1
 
-REM Build weasel.dll wrapper
-link.exe /lib /machine:x64 /def:WeaselTSF_x64.def /out:WeaselTSF_x64.lib /ignore:4104
-link.exe /lib /machine:arm64 /def:WeaselTSF_arm64.def /out:WeaselTSF_arm64.lib /ignore:4104
-link.exe /dll /noentry /machine:arm64x /defArm64Native:WeaselTSF_arm64.def /def:WeaselTSF_x64.def ^
-  /out:weaselARM64X.dll dummy.o dummy_x64.o WeaselTSF_x64.lib WeaselTSF_arm64.lib /ignore:4104
+REM Build fengyu.dll wrapper
+link.exe /lib /machine:x64 /def:FengyuTSF_x64.def /out:FengyuTSF_x64.lib /ignore:4104
+link.exe /lib /machine:arm64 /def:FengyuTSF_arm64.def /out:FengyuTSF_arm64.lib /ignore:4104
+link.exe /dll /noentry /machine:arm64x /defArm64Native:FengyuTSF_arm64.def /def:FengyuTSF_x64.def ^
+  /out:fengyuARM64X.dll dummy.o dummy_x64.o FengyuTSF_x64.lib FengyuTSF_arm64.lib /ignore:4104
 
-REM Build weasel.ime wrapper
-link.exe /lib /machine:x64 /def:WeaselIME_x64.def /out:WeaselIME_x64.lib /ignore:4104
-link.exe /lib /machine:arm64 /def:WeaselIME_arm64.def /out:WeaselIME_arm64.lib /ignore:4104
-link.exe /dll /noentry /machine:arm64x /defArm64Native:WeaselIME_arm64.def /def:WeaselIME_x64.def ^
-  /out:weaselARM64X.ime dummy.o dummy_x64.o WeaselIME_x64.lib WeaselIME_arm64.lib /ignore:4104
+REM Build fengyu.ime wrapper
+link.exe /lib /machine:x64 /def:FengyuIME_x64.def /out:FengyuIME_x64.lib /ignore:4104
+link.exe /lib /machine:arm64 /def:FengyuIME_arm64.def /out:FengyuIME_arm64.lib /ignore:4104
+link.exe /dll /noentry /machine:arm64x /defArm64Native:FengyuIME_arm64.def /def:FengyuIME_x64.def ^
+  /out:fengyuARM64X.ime dummy.o dummy_x64.o FengyuIME_x64.lib FengyuIME_arm64.lib /ignore:4104
 
 endlocal
 exit /b

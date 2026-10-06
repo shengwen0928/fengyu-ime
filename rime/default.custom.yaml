@@ -1,5 +1,5 @@
 # 風語輸入法（AIW 風光Ai窗）— 全域設定
-# 安裝小狼毫後複製到 %APPDATA%\Rime\，再執行「重新部署」
+# 由 build.bat 打包進安裝檔的共用資料夾（data\），安裝後自動生效
 patch:
   schema_list:
     - schema: bopomofo_tw   # 風語注音（預設）

@@ -3,9 +3,9 @@ param (
     [switch]$i
 )
 
-$WEASEL_SOURCE_PATH = @("RimeWithWeasel", "WeaselDeployer", "WeaselIME",
-  "WeaselIPC", "WeaselIPCServer", "WeaselServer", "WeaselSetup",
-  "WeaselTSF", "WeaselUI", "include", "test")
+$FENGYU_SOURCE_PATH = @("RimeWithFengyu", "FengyuDeployer", "FengyuIME",
+  "FengyuIPC", "FengyuIPCServer", "FengyuServer", "FengyuSetup",
+  "FengyuTSF", "FengyuUI", "include", "test")
 $excludePatterns = Get-Content .exclude_pattern.txt
 
 function ShouldExclude($filePath) {
@@ -19,7 +19,7 @@ function ShouldExclude($filePath) {
 
 $filesToProcess = @()
 
-$WEASEL_SOURCE_PATH | ForEach-Object {
+$FENGYU_SOURCE_PATH | ForEach-Object {
   $filesToProcess += Get-ChildItem -Path $_ -Recurse -Include *.cpp, *.h |
   Where-Object { $_.FullName -notmatch "include[\\/]wtl[\\/]" -and -not (ShouldExclude $_.FullName) } |
   ForEach-Object { $_.FullName }
