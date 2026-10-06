@@ -86,11 +86,16 @@ int WINAPI _tWinMain(HINSTANCE hInstance,
 
   // command line option /q stops the running server
   bool quit = !wcscmp(L"/q", lpstrCmdLine) || !wcscmp(L"/quit", lpstrCmdLine);
+  // /ensure (used by the IME when it can't reach the server): start only if no
+  // server is running, so several apps launching at once don't replace each other
+  bool ensure = !wcscmp(L"/ensure", lpstrCmdLine);
   // restart if already running
   {
     fengyu::Client client;
     if (client.Connect())  // try to connect to running server
     {
+      if (ensure)
+        return 0;
       client.ShutdownServer();
       if (quit)
         return 0;

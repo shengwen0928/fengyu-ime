@@ -235,13 +235,31 @@ void FengyuTSF::_Reconnect() {
 // last time this process launched the server, to avoid starting it repeatedly
 static ULONGLONG last_server_launch = 0;
 
+// an elevated app must not start the server: an elevated server can't be
+// reached by normal apps, which would then all lose the IME
+static bool IsProcessElevated() {
+  HANDLE token = NULL;
+  TOKEN_ELEVATION elevation = {0};
+  DWORD size = 0;
+  bool elevated = false;
+  if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) {
+    if (GetTokenInformation(token, TokenElevation, &elevation,
+                            sizeof(elevation), &size))
+      elevated = elevation.TokenIsElevated != 0;
+    CloseHandle(token);
+  }
+  return elevated;
+}
+
 bool FengyuTSF::_EnsureServerConnected() {
   if (!m_client.Echo()) {
     _Reconnect();
     // start the server right away (e.g. after an update or a crash) instead of
-    // dropping keystrokes while retrying; at most once every 5 seconds
+    // dropping keystrokes while retrying; at most once every 5 seconds.
+    // /ensure makes the server exit if another app already started one.
     ULONGLONG now = GetTickCount64();
-    if (!m_client.Echo() && now - last_server_launch > 5000) {
+    if (!m_client.Echo() && now - last_server_launch > 5000 &&
+        !IsProcessElevated()) {
       HANDLE hMutex = CreateMutex(NULL, TRUE, L"FengyuDeployerExclusiveMutex");
       bool deploying = GetLastError() == ERROR_ALREADY_EXISTS;
       if (!deploying) {
@@ -249,7 +267,7 @@ bool FengyuTSF::_EnsureServerConnected() {
         std::wstring dir = _GetRootDir();
         std::thread th([dir, this]() {
           ShellExecuteW(NULL, L"open", (dir + L"\\FengyuServer.exe").c_str(),
-                        NULL, dir.c_str(), SW_HIDE);
+                        L"/ensure", dir.c_str(), SW_HIDE);
           // wait 500ms, then reconnect
           std::this_thread::sleep_for(std::chrono::milliseconds(500));
           _Reconnect();
