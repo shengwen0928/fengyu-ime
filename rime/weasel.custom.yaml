@@ -1,0 +1,11 @@
+customization:
+  distribution_code_name: Weasel
+  distribution_version: 0.17.4
+  generator: "Weasel::UIStyleSettings"
+  modified_time: "Mon Oct  5 15:30:45 2026"
+  rime_version: 1.17.0
+patch:
+  "style/color_scheme": steam
+  # 風語輸入法：組字直接顯示轉換好的中文，不顯示注音符號（仿華碩／微軟注音）
+  "style/inline_preedit": true
+  "style/preedit_type": preview

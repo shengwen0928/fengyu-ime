@@ -1,0 +1,39 @@
+# 風語輸入法（AIW 風光Ai窗）— 注音方案改名
+patch:
+  "schema/name": 風語注音
+  "schema/author":
+    - AIW 風光Ai窗
+  "schema/description": |
+    風語輸入法 注音方案
+    基於 RIME bopomofo_tw 客製
+  # 中英混打免切換（lua/fengyu_mixed_*.lua）：插在 key_binder 與 speller 之前攔截空白／Enter
+  "engine/processors/@before 2": lua_processor@*fengyu_mixed_processor
+  "engine/filters/@before 0": lua_filter@*fengyu_mixed_filter
+  # 只有中英混打一種模式：Shift／Ctrl／Caps Lock 都不切換中英文，方案選單也不顯示中／西文開關
+  "ascii_composer/switch_key":
+    Shift_L: noop
+    Shift_R: noop
+    Control_L: noop
+    Control_R: noop
+    Caps_Lock: noop
+    Eisu_toggle: noop
+  "switches/@0":
+    name: ascii_mode
+    reset: 0
+  # 候選框預設隱藏（無 states 的開關不會出現在方案選單）
+  "switches/@next":
+    name: fengyu_hide_menu
+    reset: 1
+  # 詞庫：terra_pinyin ＋「一」「不」變調詞（ㄧˊ ㄧㄤˋ → 一樣）
+  "translator/dictionary": fengyu
+  # 拼寫規則：加入亂序容錯（手快打反 ㄨㄍㄥ 也能出「功」）；ㄇㄛ˙ 也能打出「麼」（字典只收 ㄇㄜ˙）
+  "speller/algebra":
+    __patch:
+      - zhuyin:/pinyin_to_zhuyin
+      - zhuyin:/free_order
+      # 不用簡拼（只打聲母出詞，如 ㄕㄔ→市場），否則隨便幾個字母都會湊成中文；只保留省略聲調
+      - __append:
+          - abbrev/^([A-Za-z]+)\d$/$1/
+      - zhuyin:/keymap_bopomofo
+      - __append:
+          - derive/^ak7$/ai7/
