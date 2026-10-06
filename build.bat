@@ -228,6 +228,14 @@ if %build_installer% == 1 (
   if not exist output\data\lua mkdir output\data\lua
   copy /Y %WEASEL_ROOT%\rime\lua\*.lua output\data\lua\
   if errorlevel 1 goto error
+  rem language model for sentence prediction (lotem/rime-octagram-data, hant)
+  if not exist %WEASEL_ROOT%\deps\zh-hant-t-essay-bgw.gram (
+    if not exist %WEASEL_ROOT%\deps mkdir %WEASEL_ROOT%\deps
+    %SystemRoot%\System32\curl.exe -L --fail -o %WEASEL_ROOT%\deps\zh-hant-t-essay-bgw.gram https://github.com/lotem/rime-octagram-data/raw/hant/zh-hant-t-essay-bgw.gram
+    if errorlevel 1 goto error
+  )
+  copy /Y %WEASEL_ROOT%\deps\zh-hant-t-essay-bgw.gram output\data\
+  if errorlevel 1 goto error
   "%ProgramFiles(x86)%"\NSIS\Bin\makensis.exe ^
   /INPUTCHARSET UTF8 ^
   /DWEASEL_VERSION=%WEASEL_VERSION% ^
