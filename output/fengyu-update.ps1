@@ -16,6 +16,9 @@
 param([switch]$Register, [switch]$Unregister, [switch]$StartServer)
 
 $ErrorActionPreference = 'Stop'
+# Windows PowerShell 5 redraws a progress bar per chunk, making a 40 MB
+# Invoke-WebRequest download take ~10 minutes; without it, seconds
+$ProgressPreference = 'SilentlyContinue'
 $TaskName = 'Fengyu IME Update'
 $Repo = 'shengwen0928/fengyu-ime'
 $ManifestAsset = 'fengyu-ime-update.txt'
