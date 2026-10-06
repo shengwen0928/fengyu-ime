@@ -178,10 +178,12 @@ call_uninstaller:
   ; Remove files and uninstaller
   Delete  "$R1\data\opencc\*.*"
   Delete  "$R1\data\preview\*.*"
+  Delete  "$R1\data\lua\*.*"
   Delete  "$R1\data\*.*"
   Delete  "$R1\*.*"
   RMDir   "$R1\data\opencc"
   RMDir   "$R1\data\preview"
+  RMDir   "$R1\data\lua"
   RMDir   "$R1\data"
   RMDir   "$R1"
   SetShellVarContext all
@@ -297,6 +299,9 @@ program_files:
   ; images
   SetOutPath $INSTDIR\data\preview
   File "data\preview\*.png"
+  ; fengyu lua scripts (mixed zhuyin/english input)
+  SetOutPath $INSTDIR\data\lua
+  File "data\lua\*.lua"
 
   SetOutPath $INSTDIR
 
@@ -402,10 +407,12 @@ Section "Uninstall"
   SetOutPath $TEMP
   Delete  "$INSTDIR\data\opencc\*.*"
   Delete  "$INSTDIR\data\preview\*.*"
+  Delete  "$INSTDIR\data\lua\*.*"
   Delete  "$INSTDIR\data\*.*"
   Delete  "$INSTDIR\*.*"
   RMDir  "$INSTDIR\data\opencc"
   RMDir  "$INSTDIR\data\preview"
+  RMDir  "$INSTDIR\data\lua"
   RMDir  "$INSTDIR\data"
   RMDir  "$INSTDIR"
   SetShellVarContext all

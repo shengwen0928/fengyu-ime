@@ -222,7 +222,14 @@ if %build_arm64% == 1 (
 )
 
 if %build_installer% == 1 (
+  rem bundle fengyu schema, dictionary and lua scripts
+  copy /Y %WEASEL_ROOT%\rime\*.yaml output\data\
+  if errorlevel 1 goto error
+  if not exist output\data\lua mkdir output\data\lua
+  copy /Y %WEASEL_ROOT%\rime\lua\*.lua output\data\lua\
+  if errorlevel 1 goto error
   "%ProgramFiles(x86)%"\NSIS\Bin\makensis.exe ^
+  /INPUTCHARSET UTF8 ^
   /DWEASEL_VERSION=%WEASEL_VERSION% ^
   /DWEASEL_BUILD=%WEASEL_BUILD% ^
   /DPRODUCT_VERSION=%PRODUCT_VERSION% ^
