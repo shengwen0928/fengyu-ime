@@ -139,11 +139,11 @@ int Configurator::UpdateWorkspace(bool report_errors) {
   }
 
   {
-    RimeApi* rime = rime_get_api();
+    RimeApi* engine = rime_get_api();
     // initialize default config, preset schemas
-    rime->deploy();
+    engine->deploy();
     // initialize fengyu config
-    rime->deploy_config_file("fengyu.yaml", "config_version");
+    engine->deploy_config_file("fengyu.yaml", "config_version");
   }
 
   CloseHandle(hMutex);  // should be closed before resuming service.
@@ -178,9 +178,9 @@ int Configurator::DictManagement() {
   }
 
   {
-    RimeApi* rime = rime_get_api();
-    if (RIME_API_AVAILABLE(rime, run_task)) {
-      rime->run_task("installation_update");  // setup user data sync dir
+    RimeApi* engine = rime_get_api();
+    if (RIME_API_AVAILABLE(engine, run_task)) {
+      engine->run_task("installation_update");  // setup user data sync dir
     }
     DictManagementDialog dlg;
     dlg.DoModal();
@@ -218,13 +218,13 @@ int Configurator::SyncUserData() {
   }
 
   {
-    RimeApi* rime = rime_get_api();
-    if (!rime->sync_user_data()) {
+    RimeApi* engine = rime_get_api();
+    if (!engine->sync_user_data()) {
       LOG(ERROR) << "Error synching user data.";
       CloseHandle(hMutex);
       return 1;
     }
-    rime->join_maintenance_thread();
+    engine->join_maintenance_thread();
   }
 
   CloseHandle(hMutex);  // should be closed before resuming service.

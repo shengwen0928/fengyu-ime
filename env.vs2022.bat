@@ -1,6 +1,6 @@
 rem Customize your build environment and save the modified copy to env.bat
 
-set FENGYU_ROOT=%CD%
+if not defined FENGYU_ROOT set FENGYU_ROOT=%CD%
 
 rem REQUIRED: path to Boost source directory
 if not defined BOOST_ROOT set BOOST_ROOT=%FENGYU_ROOT%\deps\boost_1_78_0

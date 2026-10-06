@@ -112,49 +112,8 @@ LRESULT SwitcherSettingsDialog::OnClose(UINT, WPARAM, LPARAM, BOOL&) {
   return 0;
 }
 
-LRESULT SwitcherSettingsDialog::OnGetSchemata(WORD, WORD, HWND hWndCtl, BOOL&) {
-  HKEY hKey;
-  std::wstring hPath;
-  if (is_wow64())
-    hPath = FENGYU_REG_KEY_WOW64;
-  else
-    hPath = FENGYU_REG_KEY;
-  LSTATUS ret = RegOpenKey(HKEY_LOCAL_MACHINE, hPath.c_str(), &hKey);
-  if (ret == ERROR_SUCCESS) {
-    WCHAR value[MAX_PATH];
-    DWORD len = sizeof(value);
-    DWORD type = 0;
-    DWORD data = 0;
-    ret =
-        RegQueryValueExW(hKey, L"FengyuRoot", NULL, &type, (LPBYTE)value, &len);
-    if (ret == ERROR_SUCCESS && type == REG_SZ) {
-      WCHAR parameters[MAX_PATH + 37];
-      wcscpy_s<_countof(parameters)>(
-          parameters,
-          (std::wstring(L"/k \"") + value + L"\\rime-install.bat\"").c_str());
-      SHELLEXECUTEINFOW cmd = {sizeof(SHELLEXECUTEINFO),
-                               SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC,
-                               hWndCtl,
-                               L"open",
-                               L"cmd",
-                               parameters,
-                               NULL,
-                               SW_SHOW,
-                               NULL,
-                               NULL,
-                               NULL,
-                               NULL,
-                               NULL,
-                               NULL,
-                               NULL};
-      ShellExecuteExW(&cmd);
-      WaitForSingleObject(cmd.hProcess, INFINITE);
-      CloseHandle(cmd.hProcess);
-      api_->load_settings(reinterpret_cast<RimeCustomSettings*>(settings_));
-      Populate();
-    }
-  }
-  RegCloseKey(hKey);
+LRESULT SwitcherSettingsDialog::OnGetSchemata(WORD, WORD, HWND, BOOL&) {
+  // 風語輸入法不附帶方案下載工具（按鈕已隱藏）
   return 0;
 }
 

@@ -1,6 +1,5 @@
-[submodule "librime"]
-	path = librime
-	url = https://github.com/rime/librime.git
-[submodule "plum"]
-	path = plum
-	url = https://github.com/rime/plum.git
+[submodule "engine"]
+	path = engine
+	url = https://github.com/shengwen0928/fengyu-engine.git
+	branch = fengyu
+	ignore = dirty

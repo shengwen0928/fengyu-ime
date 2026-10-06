@@ -160,7 +160,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\librime\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\engine\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -181,7 +181,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\librime\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\engine\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -205,7 +205,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\librime\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\engine\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -228,7 +228,7 @@
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\librime\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\engine\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -253,7 +253,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib64;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\librime\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib64;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\engine\build\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -301,7 +301,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib64;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\librime\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib64;$(BOOST_ROOT)\stage\lib;$(SolutionDir)\engine\build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">

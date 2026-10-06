@@ -252,17 +252,17 @@ program_files:
     ${If} ${IsNativeARM64}
       File "FengyuDeployer.exe"
       File "FengyuServer.exe"
-      File "rime.dll"
+      File "fengyucore.dll"
       File "WinSparkle.dll"
     ${ElseIf} ${IsNativeAMD64}
       File "FengyuDeployer.exe"
       File "FengyuServer.exe"
-      File "rime.dll"
+      File "fengyucore.dll"
       File "WinSparkle.dll"
     ${Else}
       File "Win32\FengyuDeployer.exe"
       File "Win32\FengyuServer.exe"
-      File "Win32\rime.dll"
+      File "Win32\fengyucore.dll"
       File "Win32\WinSparkle.dll"
     ${Endif}
   ; install x64 build for NativeAMD64_BELLOW_WINDOWS11
@@ -270,12 +270,12 @@ program_files:
     ${If} ${IsNativeAMD64}
       File "FengyuDeployer.exe"
       File "FengyuServer.exe"
-      File "rime.dll"
+      File "fengyucore.dll"
       File "WinSparkle.dll"
     ${Else}
       File "Win32\FengyuDeployer.exe"
       File "Win32\FengyuServer.exe"
-      File "Win32\rime.dll"
+      File "Win32\fengyucore.dll"
       File "Win32\WinSparkle.dll"
     ${Endif}
   ${Endif}

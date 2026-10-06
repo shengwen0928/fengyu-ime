@@ -18,7 +18,7 @@ jobs:
       - name: Checkout last commit
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
           fetch-depth: 0
 
       - name: Configure build environment
@@ -48,11 +48,30 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
-      - name: Get Rime files
+      - name: Get engine commit
+        id: engine
+        shell: bash
+        run: echo "commit=$(git -C engine rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache engine
+        id: cache-engine
+        uses: actions/cache@v4
+        with:
+          path: |
+            include\rime_*.h
+            lib\fengyucore.lib
+            lib64\fengyucore.lib
+            output\fengyucore.dll
+            output\Win32\fengyucore.dll
+            engine\share\opencc
+          key: ${{ runner.os }}-vs2022-engine-${{ steps.engine.outputs.commit }}
+
+      - name: Build engine
+        if: steps.cache-engine.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          .\get-rime.ps1 -use dev
+          .\build.bat engine
 
       - name: Build data
         shell: pwsh

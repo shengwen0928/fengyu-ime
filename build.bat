@@ -42,7 +42,6 @@ echo PRODUCT_VERSION=%PRODUCT_VERSION%
 echo FENGYU_VERSION=%FENGYU_VERSION%
 echo FENGYU_BUILD=%FENGYU_BUILD%
 echo FENGYU_ROOT=%FENGYU_ROOT%
-echo FENGYU_BUNDLED_RECIPES=%FENGYU_BUNDLED_RECIPES%
 echo.
 
 if defined GITHUB_ENV (
@@ -77,8 +76,8 @@ set build_boost=0
 set boost_build_variant=release
 set build_data=0
 set build_opencc=0
-set build_rime=0
-set rime_build_variant=release
+set build_engine=0
+set engine_build_variant=release
 set build_fengyu=0
 set build_installer=0
 set build_arm64=0
@@ -89,19 +88,18 @@ rem parse the command line options
   if "%1" == "debug" (
     set build_config=Debug
     set boost_build_variant=debug
-    set rime_build_variant=debug
+    set engine_build_variant=debug
   )
   if "%1" == "release" (
     set build_config=Release
     set boost_build_variant=release
-    set rime_build_variant=release
+    set engine_build_variant=release
   )
   if "%1" == "rebuild" set build_option=/t:Rebuild
   if "%1" == "boost" set build_boost=1
   if "%1" == "data" set build_data=1
   if "%1" == "opencc" set build_opencc=1
-  if "%1" == "rime" set build_rime=1
-  if "%1" == "librime" set build_rime=1
+  if "%1" == "engine" set build_engine=1
   if "%1" == "fengyu" set build_fengyu=1
   if "%1" == "installer" set build_installer=1
   if "%1" == "arm64" set build_arm64=1
@@ -109,7 +107,7 @@ rem parse the command line options
     set build_boost=1
     set build_data=1
     set build_opencc=1
-    set build_rime=1
+    set build_engine=1
     set build_fengyu=1
     set build_installer=1
     set build_arm64=1
@@ -122,7 +120,7 @@ if %build_fengyu% == 0 (
 if %build_boost% == 0 (
 if %build_data% == 0 (
 if %build_opencc% == 0 (
-if %build_rime% == 0 (
+if %build_engine% == 0 (
   set build_fengyu=1
 )))))
 
@@ -140,12 +138,12 @@ if %build_boost% == 1 (
 )
 
 rem -------------------------------------------------------------------------
-rem build librime x64 and Win32
-if %build_rime% == 1 (
-  if not exist librime\build.bat (
+rem build engine x64 and Win32
+if %build_engine% == 1 (
+  if not exist engine\build.bat (
     git submodule update --init --recursive
   )
-  cd %FENGYU_ROOT%\librime
+  cd %FENGYU_ROOT%\engine
   rem clean cache before building
   for %%a in ( build dist lib ^
     deps\glog\build ^
@@ -157,12 +155,12 @@ if %build_rime% == 1 (
       if exist %%a rd /s /q %%a
   )
 
-  rem build x64 librime
+  rem build x64 engine
   set ARCH=x64
-  call :build_librime_platform x64 %FENGYU_ROOT%\lib64 %FENGYU_ROOT%\output
-  rem build Win32 librime
+  call :build_engine_platform x64 %FENGYU_ROOT%\lib64 %FENGYU_ROOT%\output
+  rem build Win32 engine
   set ARCH=Win32
-  call :build_librime_platform Win32 %FENGYU_ROOT%\lib %FENGYU_ROOT%\output\Win32
+  call :build_engine_platform Win32 %FENGYU_ROOT%\lib %FENGYU_ROOT%\output\Win32
   rem clean the modified file
   rem git checkout .
   rem git submodule foreach git checkout .
@@ -225,13 +223,15 @@ if %build_installer% == 1 (
   rem bundle fengyu schema, dictionary and lua scripts
   copy /Y %FENGYU_ROOT%\schema\*.yaml output\data\
   if errorlevel 1 goto error
+  copy /Y %FENGYU_ROOT%\schema\*.txt output\data\
+  if errorlevel 1 goto error
   if not exist output\data\lua mkdir output\data\lua
   copy /Y %FENGYU_ROOT%\schema\lua\*.lua output\data\lua\
   if errorlevel 1 goto error
-  rem language model for sentence prediction (lotem/rime-octagram-data, hant)
+  rem language model for sentence prediction (fengyu-grammar-data, hant)
   if not exist %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram (
     if not exist %FENGYU_ROOT%\deps mkdir %FENGYU_ROOT%\deps
-    %SystemRoot%\System32\curl.exe -L --fail -o %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram https://github.com/lotem/rime-octagram-data/raw/hant/zh-hant-t-essay-bgw.gram
+    %SystemRoot%\System32\curl.exe -L --fail -o %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram https://github.com/shengwen0928/fengyu-grammar-data/raw/hant/zh-hant-t-essay-bgw.gram
     if errorlevel 1 goto error
   )
   copy /Y %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram output\data\
@@ -301,23 +301,24 @@ rem build boost
 rem ---------------------------------------------------------------------------
 :build_data
   copy %FENGYU_ROOT%\README.md output\README.txt
-  set plum_dir=plum
-  set rime_dir=output/data
-  set WSLENV=plum_dir:rime_dir
-  bash plum/rime-install %FENGYU_BUNDLED_RECIPES%
+  rem schema and dictionaries are kept in schema\ (no download needed)
+  if not exist output\data mkdir output\data
+  copy /Y %FENGYU_ROOT%\schema\*.yaml output\data\
+  if errorlevel 1 goto error
+  copy /Y %FENGYU_ROOT%\schema\*.txt output\data\
   if errorlevel 1 goto error
   exit /b
 
 rem ---------------------------------------------------------------------------
 :build_opencc_data
-  if not exist %FENGYU_ROOT%\librime\share\opencc\TSCharacters.ocd2 (
-    cd %FENGYU_ROOT%\librime
-    call build.bat deps %rime_build_variant%
+  if not exist %FENGYU_ROOT%\engine\share\opencc\TSCharacters.ocd2 (
+    cd %FENGYU_ROOT%\engine
+    call build.bat deps %engine_build_variant%
     if errorlevel 1 goto error
   )
   cd %FENGYU_ROOT%
   if not exist output\data\opencc mkdir output\data\opencc
-  copy %FENGYU_ROOT%\librime\share\opencc\*.* output\data\opencc\
+  copy %FENGYU_ROOT%\engine\share\opencc\*.* output\data\opencc\
   if errorlevel 1 goto error
   exit /b
 
@@ -325,7 +326,7 @@ rem ---------------------------------------------------------------------------
 rem %1 : ARCH
 rem %2 : push | pop , push to backup when pop to restore
 :stash_build
-  pushd %FENGYU_ROOT%\librime
+  pushd %FENGYU_ROOT%\engine
   for %%a in ( build dist lib ^
     deps\glog\build ^
     deps\googletest\build ^
@@ -345,37 +346,37 @@ rem %2 : push | pop , push to backup when pop to restore
 
 rem ---------------------------------------------------------------------------
 rem %1 : ARCH
-rem %2 : target_path of rime.lib, base %FENGYU_ROOT% or abs path
-rem %3 : target_path of rime.dll, base %FENGYU_ROOT% or abs path
-:build_librime_platform
+rem %2 : target_path of fengyucore.lib, base %FENGYU_ROOT% or abs path
+rem %3 : target_path of fengyucore.dll, base %FENGYU_ROOT% or abs path
+:build_engine_platform
   rem restore backuped %1 build
   call :stash_build %1 pop
 
-  cd %FENGYU_ROOT%\librime
+  cd %FENGYU_ROOT%\engine
   if not exist env.bat (
     copy %FENGYU_ROOT%\env.bat env.bat
   )
   if not exist lib\opencc.lib (
-    call build.bat deps %rime_build_variant%
+    call build.bat deps %engine_build_variant%
     if errorlevel 1 (
       call :stash_build %1 push
       goto error
     )
   )
-  call build.bat %rime_build_variant%
+  call build.bat %engine_build_variant%
   if errorlevel 1 (
     call :stash_build %1 push
     goto error
   )
 
-  cd %FENGYU_ROOT%\librime
+  cd %FENGYU_ROOT%\engine
   call :stash_build %1 push
 
-  copy /Y %FENGYU_ROOT%\librime\dist_%1\include\rime_*.h %FENGYU_ROOT%\include\
+  copy /Y %FENGYU_ROOT%\engine\dist_%1\include\rime_*.h %FENGYU_ROOT%\include\
   if errorlevel 1 goto error
-  copy /Y %FENGYU_ROOT%\librime\dist_%1\lib\rime.lib %2\
+  copy /Y %FENGYU_ROOT%\engine\dist_%1\lib\fengyucore.lib %2\
   if errorlevel 1 goto error
-  copy /Y %FENGYU_ROOT%\librime\dist_%1\lib\rime.dll %3\
+  copy /Y %FENGYU_ROOT%\engine\dist_%1\lib\fengyucore.dll %3\
   if errorlevel 1 goto error
 
   exit /b

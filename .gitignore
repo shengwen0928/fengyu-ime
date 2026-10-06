@@ -5,9 +5,9 @@ build
 msbuild
 compile_commands.json
 /output/Win32/*.exe
-/output/Win32/rime.dll
+/output/Win32/fengyucore.dll
 /output/Win32/*.pdb
-/lib*/rime.lib
+/lib*/fengyucore.lib
 /lib*/*.dll
 /lib*/*.pdb
 /output/*.exp
@@ -19,7 +19,7 @@ compile_commands.json
 /output/*.lib
 /output/Win32/*.lib
 /output/*.exe
-/output/rime.dll
+/output/fengyucore.dll
 /output/fengyu*.dll
 /output/*.ime
 /output/*.txt

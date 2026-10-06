@@ -14,18 +14,18 @@ bool UIStyleSettings::GetPresetColorSchemes(
   result->clear();
   RimeConfig config = {0};
   api_->settings_get_config(settings_, &config);
-  RimeApi* rime = rime_get_api();
+  RimeApi* engine = rime_get_api();
   RimeConfigIterator preset = {0};
-  if (!rime->config_begin_map(&preset, &config, "preset_color_schemes")) {
+  if (!engine->config_begin_map(&preset, &config, "preset_color_schemes")) {
     return false;
   }
-  while (rime->config_next(&preset)) {
+  while (engine->config_next(&preset)) {
     std::string name_key(preset.path);
     name_key += "/name";
-    const char* name = rime->config_get_cstring(&config, name_key.c_str());
+    const char* name = engine->config_get_cstring(&config, name_key.c_str());
     std::string author_key(preset.path);
     author_key += "/author";
-    const char* author = rime->config_get_cstring(&config, author_key.c_str());
+    const char* author = engine->config_get_cstring(&config, author_key.c_str());
     if (!name)
       continue;
     ColorSchemeInfo info;

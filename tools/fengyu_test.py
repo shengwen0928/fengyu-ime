@@ -1,4 +1,4 @@
-"""風語輸入法 — 本機模擬打字測試（直接呼叫 rime.dll，不經過 Windows 輸入法）。
+"""風語輸入法 — 本機模擬打字測試（直接呼叫 fengyucore.dll，不經過 Windows 輸入法）。
 
 用法：python fengyu_test.py "hello " "su3hello " "ru " "ru{Return}"
 會把使用者資料夾複製到暫存目錄測試，不影響正在使用的輸入法。
@@ -72,7 +72,7 @@ def main(cases, build=False):
         skip = ['*.userdb'] + (['*.gram'] if os.environ.get('FENGYU_NO_GRAMMAR') else [])  # 比較有無語言模型
         shutil.copytree(USER_DIR, user, ignore=shutil.ignore_patterns(*skip))
     os.add_dll_directory(str(app_dir))
-    engine = C.CDLL(str(app_dir / 'rime.dll'))
+    engine = C.CDLL(str(app_dir / 'fengyucore.dll'))
     t = Traits()
     t.data_size = C.sizeof(Traits) - C.sizeof(C.c_int)
     t.shared_data_dir = str(app_dir / 'data').encode()
