@@ -21,6 +21,11 @@ Unicode true
 !define FENGYU_ROOT $INSTDIR\fengyu-${FENGYU_VERSION}
 !define REG_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Fengyu"
 
+; "1" when started by the background updater (fengyu-update.ps1 passes /UPDATE).
+; It runs as SYSTEM, so per-user steps (deploy, starting the server, prompts) are
+; skipped; the IME restarts the server in each user session on next use.
+Var UpdateMode
+
 ; The name of the installer
 Name "風語輸入法 ${FENGYU_VERSION}"
 
@@ -187,6 +192,17 @@ toquit:
     Quit
   ${EndIf}
 
+  StrCpy $UpdateMode "0"
+  ${GetParameters} $R0
+  ClearErrors
+  ${GetOptions} $R0 "/UPDATE" $R1
+  ${IfNot} ${Errors}
+    StrCpy $UpdateMode "1"
+    ; stop the server in every user session, /quit only reaches our own
+    nsExec::Exec '"$SYSDIR\taskkill.exe" /F /IM FengyuServer.exe'
+    Pop $R1
+  ${EndIf}
+
   Call RemoveLegacyFengyu
 
   ReadRegStr $R0 HKLM "Software\Fengyu\IME" "InstallDir"
@@ -295,6 +311,7 @@ Section "Fengyu"
 
 program_files:
   File "README.txt"
+  File "fengyu-update.ps1"
   File "start_service.bat"
   File "stop_service.bat"
   File "fengyu.dll"
@@ -390,6 +407,13 @@ program_files:
   WriteRegDWORD HKLM "${REG_UNINST_KEY}" "NoRepair" 1
   WriteUninstaller "$INSTDIR\uninstall.exe"
 
+  ; background updater: daily scheduled task running fengyu-update.ps1 as SYSTEM
+  nsExec::Exec 'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$INSTDIR\fengyu-update.ps1" -Register'
+  Pop $R1
+
+  ; deploying acts on the logged-on user; skipped when run by the updater
+  StrCmp $UpdateMode "1" deploy_done
+
   ; run as user...
   IfSilent deploy_silently
   ExecWait "$INSTDIR\FengyuDeployer.exe /install"
@@ -407,6 +431,9 @@ program_files:
   ${Endif}
   ; Write autorun key
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "FengyuServer" "$INSTDIR\FengyuServer.exe"
+  ; the updater runs as SYSTEM: don't start the server or prompt; the IME
+  ; starts the new server in each user session on next use
+  StrCmp $UpdateMode "1" end
   ; Start FengyuServer
   Exec "$INSTDIR\FengyuServer.exe"
 
@@ -451,6 +478,14 @@ SectionEnd
 Section "Uninstall"
 
   ExecWait '"$INSTDIR\FengyuServer.exe" /quit'
+
+  ; remove the background updater task and its work folder
+  nsExec::Exec 'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$INSTDIR\fengyu-update.ps1" -Unregister'
+  Pop $R1
+  SetShellVarContext all
+  Delete "$APPDATA\Fengyu\update\*.*"
+  RMDir "$APPDATA\Fengyu\update"
+  RMDir "$APPDATA\Fengyu"
 
   ExecWait '"$INSTDIR\FengyuSetup.exe" /u'
 

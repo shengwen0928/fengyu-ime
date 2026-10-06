@@ -232,18 +232,23 @@ void FengyuTSF::_Reconnect() {
   }
 }
 
-static unsigned int retry = 0;
+// last time this process launched the server, to avoid starting it repeatedly
+static ULONGLONG last_server_launch = 0;
 
 bool FengyuTSF::_EnsureServerConnected() {
   if (!m_client.Echo()) {
     _Reconnect();
-    retry++;
-    if (retry >= 6) {
+    // start the server right away (e.g. after an update or a crash) instead of
+    // dropping keystrokes while retrying; at most once every 5 seconds
+    ULONGLONG now = GetTickCount64();
+    if (!m_client.Echo() && now - last_server_launch > 5000) {
       HANDLE hMutex = CreateMutex(NULL, TRUE, L"FengyuDeployerExclusiveMutex");
-      if (!m_client.Echo() && GetLastError() != ERROR_ALREADY_EXISTS) {
+      bool deploying = GetLastError() == ERROR_ALREADY_EXISTS;
+      if (!deploying) {
+        last_server_launch = now;
         std::wstring dir = _GetRootDir();
         std::thread th([dir, this]() {
-          ShellExecuteW(NULL, L"open", (dir + L"\\start_service.bat").c_str(),
+          ShellExecuteW(NULL, L"open", (dir + L"\\FengyuServer.exe").c_str(),
                         NULL, dir.c_str(), SW_HIDE);
           // wait 500ms, then reconnect
           std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -254,7 +259,6 @@ bool FengyuTSF::_EnsureServerConnected() {
       if (hMutex) {
         CloseHandle(hMutex);
       }
-      retry = 0;
     }
     return (m_client.Echo() != 0);
   } else {
