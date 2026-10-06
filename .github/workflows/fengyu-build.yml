@@ -1,0 +1,74 @@
+# 風語輸入法（AIW 風光Ai窗）— 編譯安裝程式
+# 改自上游 commit-ci.yml：改用 windows-2022／VS2022，產出 fengyu-ime 安裝程式
+name: Fengyu IME Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-2022
+    env:
+      boost_version: 1.84.0
+      BOOST_ROOT: ${{ github.workspace }}\deps\boost_1_84_0
+    steps:
+      - name: Checkout last commit
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Configure build environment
+        shell: bash
+        run: cp env.vs2022.bat env.bat
+
+      - name: Install build tools if missing
+        shell: pwsh
+        run: |
+          if (-not (Get-Command aria2c -ErrorAction SilentlyContinue)) { choco install aria2 -y --no-progress }
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\NSIS\Bin\makensis.exe")) { choco install nsis -y --no-progress }
+
+      - name: Cache Boost
+        id: cache-boost
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BOOST_ROOT }}
+          key: ${{ runner.os }}-vs2022-x64-boost-${{ env.boost_version }}
+
+      - name: Install Boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          ./install_boost.bat
+          ./build.bat boost
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Get Rime files
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          .\get-rime.ps1 -use dev
+
+      - name: Build data
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          .\build.bat data
+
+      - name: Build Fengyu IME
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          .\build.bat installer
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: fengyu-ime-installer
+          if-no-files-found: error
+          path: .\output\archives\fengyu-ime*.exe
