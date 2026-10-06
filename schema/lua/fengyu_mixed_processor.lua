@@ -11,6 +11,13 @@ local mixed = require("fengyu_mixed")
 
 local kRejected, kAccepted, kNoop = 0, 1, 2
 
+-- 數字鍵盤（Num Lock 開）按鍵 → 字元
+local KEYPAD = {
+  KP_0 = "0", KP_1 = "1", KP_2 = "2", KP_3 = "3", KP_4 = "4",
+  KP_5 = "5", KP_6 = "6", KP_7 = "7", KP_8 = "8", KP_9 = "9",
+  KP_Decimal = ".", KP_Add = "+", KP_Subtract = "-", KP_Multiply = "*", KP_Divide = "/",
+}
+
 -- 讀取標點設定：
 --   menu   ＝有多個選項的鍵（如 ? [ $），按下時顯示候選框
 --   direct ＝只有一個值的鍵（如 + = ~），直接送出，不留在組字區等待
@@ -81,6 +88,20 @@ local function func(key, env)
 
   if k == "Down" and ctx:is_composing() and ctx:get_option("fengyu_hide_menu") then
     ctx:set_option("fengyu_hide_menu", false)
+    return kAccepted
+  end
+
+  -- 數字鍵盤：沒在組字時引擎不處理、直接輸入；組字中則先送出組字區（數字原樣、中文送最佳轉換），再輸入該字元
+  local kp = KEYPAD[k]
+  if kp then
+    if not ctx:is_composing() then return kNoop end
+    local prefix, run, is_number = mixed.split(ctx.input)
+    if is_number then
+      commit_mixed(env, ctx, prefix, run)
+    else
+      ctx:commit()
+    end
+    env.engine:commit_text(kp)
     return kAccepted
   end
 
