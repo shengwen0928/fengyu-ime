@@ -1,11 +1,13 @@
 """蒸餾資料產生器：以目前安裝的風語引擎（teacher）產生 大千按鍵 -> 輸出 的資料集。
 
 用法：python generate.py [--out dataset.jsonl] [--seed N] [--words N] [--sentences N]
-全新程式碼；只透過 ctypes 驅動 fengyucore.dll，使用全新暫存使用者資料夾（學習不外洩）。
+全新程式碼；只透過 ctypes 驅動 fengyucore.dll。
+每筆案例各開一個全新子程序＋全新暫存使用者資料夾（學習與前後文狀態不跨案例）。
 """
 import argparse
 import ctypes as C
 import json
+import multiprocessing as mp
 import os
 import random
 import re
@@ -197,6 +199,26 @@ class Teacher:
         shutil.rmtree(self.work, ignore_errors=True)
 
 
+CATEGORY = {'word': 'chinese', 'char': 'chinese', 'sentence': 'chinese', 'typo': 'typo',
+            'english': 'english', 'abbr': 'english', 'number': 'number',
+            'mixed_zh_en': 'mixed', 'mixed_en_zh': 'mixed', 'mixed_zh_num': 'mixed'}
+
+
+def run_isolated(case):
+    """子程序入口：全新引擎＋全新使用者資料夾，只跑一筆。"""
+    kind, text, keys = case
+    t = Teacher()
+    try:
+        out, pre, cands = t.run(keys)
+    finally:
+        t.close()
+    # 老師疑似有誤：空輸出，或 中文＋數字 案例輸出與意圖不符（數字被當注音／吞字）
+    suspect = out == '' or (kind == 'mixed_zh_num' and out != text)
+    return {'keys': keys, 'output': out, 'preedit': pre, 'candidates': cands, 'kind': kind,
+            'category': CATEGORY[kind], 'expected': text, 'isolated': True,
+            'teacher_suspect': suspect}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default=str(HERE / 'dataset.jsonl'))
@@ -205,6 +227,7 @@ def main():
     ap.add_argument('--sentences', type=int, default=1500)
     ap.add_argument('--english', type=int, default=900)
     ap.add_argument('--typos', type=int, default=600)
+    ap.add_argument('--jobs', type=int, default=max(1, (os.cpu_count() or 4) // 2))
     a = ap.parse_args()
     rnd = random.Random(a.seed)
     readings = load_readings()
@@ -274,18 +297,18 @@ def main():
         add('abbr', ab, ab + ' ')
 
     print(f'案例數 {len(cases)}', flush=True)
-    t = Teacher()
     t0 = time.time()
-    counts = {}
-    with open(a.out, 'w', encoding='utf-8', newline='\n') as f:
-        for i, (kind, text, keys) in enumerate(cases):
-            out, pre, cands = t.run(keys)
-            f.write(json.dumps({'keys': keys, 'output': out, 'preedit': pre, 'candidates': cands,
-                                'kind': kind, 'expected': text}, ensure_ascii=False) + '\n')
-            counts[kind] = counts.get(kind, 0) + 1
-            if i % 500 == 0:
+    counts, sus = {}, {}
+    with open(a.out, 'w', encoding='utf-8', newline='\n') as f, \
+            mp.get_context('spawn').Pool(a.jobs, maxtasksperchild=1) as pool:
+        for i, rec in enumerate(pool.imap(run_isolated, cases, chunksize=1)):
+            f.write(json.dumps(rec, ensure_ascii=False) + '\n')
+            counts[rec['kind']] = counts.get(rec['kind'], 0) + 1
+            if rec['teacher_suspect']:
+                sus[rec['kind']] = sus.get(rec['kind'], 0) + 1
+            if i % 200 == 0:
                 print(i, f'{time.time() - t0:.0f}s', flush=True)
-    t.close()
+    print('可疑', sus)
     print('完成', len(cases), counts, f'{time.time() - t0:.0f}s')
 
 
