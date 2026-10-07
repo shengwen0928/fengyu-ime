@@ -173,6 +173,12 @@ local function func(key, env)
       local prefix, run, is_number = mixed.split(ctx.input)
       if is_number then commit_mixed(env, ctx, prefix, run) end
     end
+    -- 英文後面直接接注音（如 bom表）：整段是 3 個以上小寫字母、被判為英文，接著按數字列的注音鍵
+    -- （聲母 1 2 5、韻母 8 9 0 -；聲調鍵 3 4 6 7 除外，不影響 su3 這類打法）→ 先送出英文，再開始打注音
+    if ch and ch:match("^[125890%-]$") and ctx:is_composing() and ctx.input:match("^%l%l%l+$") then
+      local prefix, run, is_number = mixed.split(ctx.input)
+      if run and not is_number and prefix == "" then commit_mixed(env, ctx, "", run) end
+    end
     return kNoop
   end
   if not ctx:is_composing() then return kNoop end
