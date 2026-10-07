@@ -49,8 +49,10 @@ int FengyuServerApp::Run() {
 
 void FengyuServerApp::SetupMenuHandlers() {
   std::filesystem::path dir = install_dir();
+  // 重新啟動：新的服務會接手並關閉目前這個
   m_server.AddMenuHandler(ID_FENGYUTRAY_QUIT,
-                          [this] { return m_server.Stop() == 0; });
+                          std::bind(execute, dir / L"FengyuServer.exe",
+                                    std::wstring()));
   m_server.AddMenuHandler(ID_FENGYUTRAY_DEPLOY,
                           std::bind(execute, dir / L"FengyuDeployer.exe",
                                     std::wstring(L"/deploy")));

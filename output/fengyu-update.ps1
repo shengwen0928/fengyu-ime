@@ -13,7 +13,7 @@
 # The private key never leaves the release machine (see tools\release.ps1), so a
 # compromised GitHub account alone cannot push a malicious installer.
 
-param([switch]$Register, [switch]$Unregister, [switch]$StartServer)
+param([switch]$Register, [switch]$Unregister, [switch]$StartServer, [switch]$Check)
 
 $ErrorActionPreference = 'Stop'
 # Windows PowerShell 5 redraws a progress bar per chunk, making a 40 MB
@@ -36,6 +36,23 @@ if ($Register) {
   $principal = New-ScheduledTaskPrincipal -UserId 'S-1-5-18' -RunLevel Highest
   Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger @($daily, $boot) `
     -Settings $settings -Principal $principal -Force | Out-Null
+  # let signed-in users start the check from the Start menu shortcut (-Check)
+  $svc = New-Object -ComObject Schedule.Service
+  $svc.Connect()
+  $task = $svc.GetFolder('\').GetTask($TaskName)
+  $sd = $task.GetSecurityDescriptor(0xF)
+  if ($sd -notmatch '\(A;;GRGX;;;AU\)') { $task.SetSecurityDescriptor($sd + '(A;;GRGX;;;AU)', 0) }
+  exit 0
+}
+if ($Check) {
+  Add-Type -AssemblyName System.Windows.Forms
+  try {
+    Start-ScheduledTask -TaskName $TaskName
+    $msg = '已開始檢查新版本。若有新版，會在一分鐘內於背景自動安裝。'
+  } catch {
+    $msg = "無法檢查新版本：$($_.Exception.Message)"
+  }
+  [System.Windows.Forms.MessageBox]::Show($msg, '風語輸入法') | Out-Null
   exit 0
 }
 if ($Unregister) {

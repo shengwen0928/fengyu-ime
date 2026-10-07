@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>風語輸入法 使用說明</title>
+<style>
+  :root { --bg: #fff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --key: #f6f8fa; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --key: #151b23; }
+  }
+  body { background: var(--bg); color: var(--fg); font: 16px/1.7 "Microsoft JhengHei", system-ui, sans-serif;
+         max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 20px; margin-top: 32px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .sub { color: var(--muted); margin-top: 0; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border-bottom: 1px solid var(--line); padding: 8px 6px; text-align: left; vertical-align: top; }
+  th { color: var(--muted); font-weight: normal; width: 42%; }
+  kbd { background: var(--key); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px;
+        font: 14px Consolas, monospace; }
+</style>
+</head>
+<body>
+<h1>風語輸入法</h1>
+<p class="sub">大千注音、中英混打，不用切換。</p>
+
+<h2>打字</h2>
+<table>
+  <tr><th>打中文</th><td>照大千注音打，打完一個字按聲調鍵或 <kbd>空白</kbd>（一聲）</td></tr>
+  <tr><th>送出整句</th><td><kbd>Enter</kbd></td></tr>
+  <tr><th>打英文</th><td>直接打，按 <kbd>空白</kbd> 送出並空一格，按 <kbd>Enter</kbd> 只送出英文</td></tr>
+  <tr><th>英文接中文</th><td>直接接著打注音，例如 <kbd>bom</kbd> 接著打「表」→ bom表</td></tr>
+  <tr><th>數字</th><td>右側數字鍵盤隨時可用；上排數字鍵打完按 <kbd>空白</kbd> 或 <kbd>Enter</kbd></td></tr>
+  <tr><th>大寫英文</th><td><kbd>Shift</kbd> 或 <kbd>Caps Lock</kbd>；Caps Lock 開著也能照常打注音</td></tr>
+</table>
+
+<h2>選字與修正</h2>
+<table>
+  <tr><th>叫出候選字</th><td><kbd>↓</kbd></td></tr>
+  <tr><th>選字</th><td>候選框打開時按 <kbd>1</kbd>～<kbd>5</kbd>，或用 <kbd>↓</kbd> 移動後按 <kbd>Enter</kbd></td></tr>
+  <tr><th>被打成中文，其實要英文</th><td>按 <kbd>Enter</kbd> 送出英文，之後會記住</td></tr>
+  <tr><th>被打成英文，其實要中文</th><td>按 <kbd>↓</kbd> 改選中文，之後會記住</td></tr>
+  <tr><th>選錯字</th><td>選過一次正確的字詞，下次就會排在前面</td></tr>
+</table>
+
+<h2>標點</h2>
+<table>
+  <tr><th>，。！</th><td><kbd>Shift</kbd>+<kbd>,</kbd>　<kbd>Shift</kbd>+<kbd>.</kbd>　<kbd>Shift</kbd>+<kbd>1</kbd></td></tr>
+  <tr><th>有多種寫法的標點（？「：…）</th><td>按下後會出現候選框，按數字選擇</td></tr>
+  <tr><th>符號表</th><td><kbd>`</kbd></td></tr>
+</table>
+
+<h2>其他</h2>
+<table>
+  <tr><th>設定、詞典管理</th><td>右下角輸入法圖示按右鍵</td></tr>
+  <tr><th>輸入法沒有反應</th><td>右鍵選單 →「重新啟動輸入法」</td></tr>
+  <tr><th>更新</th><td>每天自動在背景更新；也可從開始選單執行「檢查新版本」</td></tr>
+</table>
+</body>
+</html>

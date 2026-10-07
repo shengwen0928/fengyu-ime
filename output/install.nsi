@@ -54,6 +54,8 @@ RequestExecutionLevel admin
 
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\manual.html"
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "$(SHOWMANUAL)"
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
@@ -66,20 +68,20 @@ RequestExecutionLevel admin
 
 !insertmacro MUI_LANGUAGE "TradChinese"
 LangString DISPLAYNAME ${LANG_TRADCHINESE} "風語輸入法"
-LangString LNKFORMANUAL ${LANG_TRADCHINESE} "【風語輸入法】說明書"
+LangString LNKFORMANUAL ${LANG_TRADCHINESE} "【風語輸入法】使用說明"
 LangString LNKFORSETTING ${LANG_TRADCHINESE} "【風語輸入法】輸入法設定"
-LangString LNKFORDICT ${LANG_TRADCHINESE} "【風語輸入法】用戶詞典管理"
-LangString LNKFORSYNC ${LANG_TRADCHINESE} "【風語輸入法】用戶資料同步"
-LangString LNKFORDEPLOY ${LANG_TRADCHINESE} "【風語輸入法】重新部署"
-LangString LNKFORSERVER ${LANG_TRADCHINESE} "風語輸入法算法服務"
-LangString LNKFORUSERFOLDER ${LANG_TRADCHINESE} "【風語輸入法】用戶文件夾"
-LangString LNKFORAPPFOLDER ${LANG_TRADCHINESE} "【風語輸入法】程序文件夾"
+LangString LNKFORDICT ${LANG_TRADCHINESE} "【風語輸入法】使用者詞典管理"
+LangString LNKFORSYNC ${LANG_TRADCHINESE} "【風語輸入法】使用者資料同步"
+LangString LNKFORDEPLOY ${LANG_TRADCHINESE} "【風語輸入法】重新載入設定"
+LangString LNKFORSERVER ${LANG_TRADCHINESE} "風語輸入法背景服務"
+LangString LNKFORUSERFOLDER ${LANG_TRADCHINESE} "【風語輸入法】使用者資料夾"
+LangString LNKFORAPPFOLDER ${LANG_TRADCHINESE} "【風語輸入法】程式資料夾"
 LangString LNKFORUPDATER ${LANG_TRADCHINESE} "【風語輸入法】檢查新版本"
 LangString LNKFORSETUP ${LANG_TRADCHINESE} "【風語輸入法】安裝選項"
-LangString LNKFORUNINSTALL ${LANG_TRADCHINESE} "卸載風語輸入法"
-LangString CONFIRMATION ${LANG_TRADCHINESE} "安裝前，請先卸載舊版本的風語輸入法。$\n$\n按下「確定」移除舊版本，按下「取消」放棄本次安裝。"
-LangString SYSTEMVERSIONNOTOK ${LANG_TRADCHINESE} "您的系统不被支持，最低系統要求:Windows 8.1!"
-LangString AUTOCHKUPDATE ${LANG_TRADCHINESE} "自動檢查版本更新？"
+LangString LNKFORUNINSTALL ${LANG_TRADCHINESE} "解除安裝風語輸入法"
+LangString CONFIRMATION ${LANG_TRADCHINESE} "安裝前需先移除舊版的風語輸入法。$\n$\n按「確定」移除舊版並繼續，按「取消」放棄安裝。"
+LangString SYSTEMVERSIONNOTOK ${LANG_TRADCHINESE} "此系統版本不支援，需要 Windows 8.1 以上。"
+LangString SHOWMANUAL ${LANG_TRADCHINESE} "開啟使用說明"
 
 !insertmacro MUI_LANGUAGE "SimpChinese"
 LangString DISPLAYNAME ${LANG_SIMPCHINESE} "風語輸入法"
@@ -96,7 +98,7 @@ LangString LNKFORSETUP ${LANG_SIMPCHINESE} "【風語輸入法】安装选项"
 LangString LNKFORUNINSTALL ${LANG_SIMPCHINESE} "卸载風語輸入法"
 LangString CONFIRMATION ${LANG_SIMPCHINESE} '安装前，请先卸载旧版本的風語輸入法。$\n$\n点击 "确定" 移除旧版本，或点击 "取消" 放弃本次安装。'
 LangString SYSTEMVERSIONNOTOK ${LANG_SIMPCHINESE} "您的系統不被支持，最低系统要求:Windows 8.1!"
-LangString AUTOCHKUPDATE ${LANG_SIMPCHINESE} "自动检查版本更新？"
+LangString SHOWMANUAL ${LANG_SIMPCHINESE} "打开使用说明"
 
 !insertmacro MUI_LANGUAGE "English"
 LangString DISPLAYNAME ${LANG_ENGLISH} "Fengyu"
@@ -113,7 +115,7 @@ LangString LNKFORSETUP ${LANG_ENGLISH} "Fengyu Installation Preference"
 LangString LNKFORUNINSTALL ${LANG_ENGLISH} "Uninstall Fengyu"
 LangString CONFIRMATION ${LANG_ENGLISH} "Before installation, please uninstall the old version of Fengyu.$\n$\nPress 'OK' to remove the old version, or 'Cancel' to abort installation."
 LangString SYSTEMVERSIONNOTOK ${LANG_ENGLISH} "Your system not supported, minimium system required: Windows 8.1!"
-LangString AUTOCHKUPDATE ${LANG_ENGLISH} "Automatically check for updates?"
+LangString SHOWMANUAL ${LANG_ENGLISH} "Open the user guide"
 
 ;--------------------------------
 
@@ -316,6 +318,7 @@ Section "Fengyu"
 
 program_files:
   File "README.txt"
+  File "manual.html"
   File "fengyu-update.ps1"
   File "start_service.bat"
   File "stop_service.bat"
@@ -389,8 +392,7 @@ program_files:
 
   SetOutPath $INSTDIR
 
-  ; test /T flag for zh_TW locale
-  StrCpy $R2 "/i"
+  StrCpy $R2 "/t"
   ${GetParameters} $R0
   ClearErrors
   ${GetOptions} $R0 "/S" $R1
@@ -423,12 +425,6 @@ program_files:
   ; deploying acts on the logged-on user; skipped when run by the updater
   StrCmp $UpdateMode "1" deploy_done
 
-  ; run as user...
-  IfSilent deploy_silently
-  ExecWait "$INSTDIR\FengyuDeployer.exe /install"
-  GoTo deploy_done
-
-  deploy_silently:
   ExecWait "$INSTDIR\FengyuDeployer.exe /deploy"
   deploy_done:
 
@@ -446,14 +442,8 @@ program_files:
   ; Start FengyuServer
   Exec "$INSTDIR\FengyuServer.exe"
 
-  ; option CheckForUpdates
-  IfSilent DisableAutoCheckUpdate
-  MessageBox MB_YESNO|MB_ICONINFORMATION "$(AUTOCHKUPDATE)" IDYES EnableAutoCheckUpdate
-  DisableAutoCheckUpdate:
+  ; 更新由 fengyu-update.ps1 排程負責，停用舊的 WinSparkle 檢查
   WriteRegStr HKCU "Software\Fengyu\IME\Updates" "CheckForUpdates" "0"
-  GoTo end
-  EnableAutoCheckUpdate:
-  WriteRegStr HKCU "Software\Fengyu\IME\Updates" "CheckForUpdates" "1"
   end:
 
   ; Prompt reboot
@@ -466,7 +456,7 @@ SectionEnd
 Section "Start Menu Shortcuts"
   SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\$(DISPLAYNAME)"
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORMANUAL).lnk" "$INSTDIR\README.txt"
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORMANUAL).lnk" "$INSTDIR\manual.html"
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSETTING).lnk" "$INSTDIR\FengyuDeployer.exe" "" "$SYSDIR\shell32.dll" 21
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORDICT).lnk" "$INSTDIR\FengyuDeployer.exe" "/dict" "$SYSDIR\shell32.dll" 6
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSYNC).lnk" "$INSTDIR\FengyuDeployer.exe" "/sync" "$SYSDIR\shell32.dll" 26
@@ -474,7 +464,7 @@ Section "Start Menu Shortcuts"
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSERVER).lnk" "$INSTDIR\FengyuServer.exe" "" "$INSTDIR\FengyuServer.exe" 0
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUSERFOLDER).lnk" "$INSTDIR\FengyuServer.exe" "/userdir" "$SYSDIR\shell32.dll" 126
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORAPPFOLDER).lnk" "$INSTDIR\FengyuServer.exe" "/fengyudir" "$SYSDIR\shell32.dll" 19
-  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUPDATER).lnk" "$INSTDIR\FengyuServer.exe" "/update" "$SYSDIR\shell32.dll" 13
+  CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUPDATER).lnk" "powershell.exe" '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "$INSTDIR\fengyu-update.ps1" -Check' "$SYSDIR\shell32.dll" 13
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORSETUP).lnk" "$INSTDIR\FengyuSetup.exe" "" "$SYSDIR\shell32.dll" 162
   CreateShortCut "$SMPROGRAMS\$(DISPLAYNAME)\$(LNKFORUNINSTALL).lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 
