@@ -99,8 +99,12 @@ local function func(key, env)
 
   local k = key:repr()
   local ctx = env.engine.context
-  -- 離開組字（送出或清除）後，↓ 要求的中文不再適用
-  if not ctx:is_composing() then mixed.forced_zh, mixed.forced_zh_run = nil, nil end
+  -- 離開組字（送出、Esc 或刪光）後：↓ 要求的中文不再適用，候選框也要收起來，
+  -- 否則下一段的數字鍵（聲調、注音）會被當成選字
+  if not ctx:is_composing() then
+    mixed.forced_zh, mixed.forced_zh_run = nil, nil
+    if not ctx:get_option("fengyu_hide_menu") then ctx:set_option("fengyu_hide_menu", true) end
+  end
 
   if k == "Down" and ctx:is_composing() then
     -- 結尾被判成英文、使用者按 ↓：改給中文候選（選定後會學起來）
@@ -117,7 +121,8 @@ local function func(key, env)
     end
   end
 
-  -- 候選框顯示中：數字鍵 1～9 直接選當頁候選（數字鍵平常是注音鍵，只有候選框打開時才拿來選字）
+  -- 候選框顯示中：數字鍵 1～9 直接選當頁候選（數字鍵平常是注音鍵，只有候選框打開時才拿來選字）；
+  -- 選完就收起候選框，之後的數字鍵恢復為注音／聲調
   local code0 = key.keycode
   if code0 >= 0x31 and code0 <= 0x39 and ctx:is_composing()
       and not ctx:get_option("fengyu_hide_menu") and ctx:has_menu() then
@@ -125,7 +130,12 @@ local function func(key, env)
     local seg = ctx.composition:back()
     local idx = math.floor(seg.selected_index / page) * page + (code0 - 0x31)
     ctx:select(idx)
+    ctx:set_option("fengyu_hide_menu", true)
     return kAccepted
+  end
+  -- 候選框顯示中繼續打注音字母：收起候選框，避免接著的聲調鍵被當成選字
+  if code0 >= 0x61 and code0 <= 0x7a and ctx:is_composing() and not ctx:get_option("fengyu_hide_menu") then
+    ctx:set_option("fengyu_hide_menu", true)
   end
 
   -- 數字鍵盤：沒在組字時引擎不處理、直接輸入；組字中則先送出組字區（數字原樣、中文送最佳轉換），再輸入該字元
