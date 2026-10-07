@@ -228,14 +228,6 @@ if %build_installer% == 1 (
   if not exist output\data\lua mkdir output\data\lua
   copy /Y %FENGYU_ROOT%\schema\lua\*.lua output\data\lua\
   if errorlevel 1 goto error
-  rem language model for sentence prediction (fengyu-grammar-data, hant)
-  if not exist %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram (
-    if not exist %FENGYU_ROOT%\deps mkdir %FENGYU_ROOT%\deps
-    %SystemRoot%\System32\curl.exe -L --fail -o %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram https://github.com/shengwen0928/fengyu-grammar-data/raw/hant/zh-hant-t-essay-bgw.gram
-    if errorlevel 1 goto error
-  )
-  copy /Y %FENGYU_ROOT%\deps\zh-hant-t-essay-bgw.gram output\data\
-  if errorlevel 1 goto error
   "%ProgramFiles(x86)%"\NSIS\Bin\makensis.exe ^
   /INPUTCHARSET UTF8 ^
   /DFENGYU_VERSION=%FENGYU_VERSION% ^

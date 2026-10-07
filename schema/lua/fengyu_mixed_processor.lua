@@ -38,6 +38,7 @@ end
 -- 注意：不可每次按鍵都 set_option，會觸發通知、造成 TSF 按鍵順序錯亂
 local function init(env)
   local context = env.engine.context
+  mixed.configure(env.engine.schema.config)
   env.menu_puncts, env.direct_puncts = load_puncts(env.engine.schema.config)
   env.on_commit = context.commit_notifier:connect(function(ctx)
     if not ctx:get_option("fengyu_hide_menu") then
@@ -130,9 +131,9 @@ local function func(key, env)
   local ch = (code > 0x20 and code < 0x7f) and string.char(code) or nil
 
   -- Caps Lock 打注音（SU3＝ㄋㄧˇ）：大寫段需拼成完整音節，MS365、A4 仍是英文
-  if ch and ch:match("[3467]") and ctx:is_composing() then
+  if ch and ch:match(mixed.tone_class) and ctx:is_composing() then
     local prefix, run = ctx.input:match("^(.-)(%u+)$")
-    if run and (prefix == "" or prefix:match("[ 3467]$"))
+    if run and (prefix == "" or prefix:match(mixed.tone_end))
         and mixed.zhuyin_possible(run:lower(), true) then
       ctx.input = prefix .. run:lower()
     end
@@ -154,13 +155,13 @@ local function func(key, env)
       if is_number then commit_mixed(env, ctx, prefix, run) end
     end
     -- bom表：英文後接數字列的注音聲母／韻母鍵
-    if ch and ch:match("^[125890%-]$") and ctx:is_composing() and ctx.input:match("^%l%l%l+$") then
+    if ch and ch:match("^" .. mixed.start_class .. "$") and ctx:is_composing() and ctx.input:match("^%l%l%l+$") then
       local prefix, run, is_number = mixed.split(ctx.input)
       if run and not is_number and prefix == "" then commit_mixed(env, ctx, "", run) end
     end
     -- BOM表：大寫字後的數字再接注音字母時才拆開（COVID19 不受影響）
     if ch and ch:match("[%l,/;%.%-]") and ctx:is_composing() then
-      local en, rest = ctx.input:match("^(%u[%a%-_+.']+)([125890%-]%d*)$")
+      local en, rest = ctx.input:match("^(%u[%a%-_+.']+)(" .. mixed.start_class .. "%d*)$")
       if en then
         commit_mixed(env, ctx, "", en)
         ctx.input = rest
@@ -173,7 +174,7 @@ local function func(key, env)
     commit_mixed(env, ctx, "", k == "space" and (ctx.input .. " ") or ctx.input)
     return kAccepted
   end
-  if k == "Return" and ctx.input:match("^[%d.]+$") and not ctx.input:match("[3467]") then
+  if k == "Return" and ctx.input:match("^[%d.]+$") and not ctx.input:match(mixed.tone_class) then
     commit_mixed(env, ctx, "", ctx.input)
     return kAccepted
   end

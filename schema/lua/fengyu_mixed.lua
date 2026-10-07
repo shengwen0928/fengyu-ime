@@ -15,6 +15,27 @@ for s in pairs(english.syllables) do
   for i = 1, #s do syl_prefix[s:sub(1, i)] = true end
 end
 
+local function char_class(chars)
+  return "[" .. chars:gsub("[%%%-%]%^]", "%%%0") .. "]"
+end
+
+-- 聲調鍵取自方案 speller/finals；可開始一個音節的非字母鍵取自音節表
+function M.configure(config)
+  local finals = config and config:get_string("speller/finals") or " 3467"
+  local tones = finals:gsub(" ", "")
+  M.tone_class = char_class(tones)
+  M.tone_end = char_class(" " .. tones) .. "$"
+  local starts = {}
+  for s in pairs(english.syllables) do
+    local c = s:sub(1, 1)
+    if not c:match("%a") and not starts[c] then starts[c] = true end
+  end
+  local keys = {}
+  for c in pairs(starts) do keys[#keys + 1] = c end
+  M.start_class = char_class(table.concat(keys))
+end
+M.configure(nil)
+
 -- complete：最後一個音節也須完整
 local function zhuyin_possible(run, complete)
   local n = #run
@@ -25,7 +46,7 @@ local function zhuyin_possible(run, complete)
       for len = 1, 4 do
         if i + len <= n and english.syllables[run:sub(i + 1, i + len)] then
           ok[i + len] = true
-          if run:sub(i + len + 1, i + len + 1):match("[3467]") then ok[i + len + 1] = true end
+          if run:sub(i + len + 1, i + len + 1):match(M.tone_class) then ok[i + len + 1] = true end
         end
       end
     end
@@ -47,7 +68,6 @@ local kinds = {}
 function M.set_kind(kind) kinds[M.app] = kind end
 function M.last_kind() return kinds[M.app] end
 
-local ACRONYMS = { ai = true, ui = true }
 M.forced_zh = nil
 M.forced_zh_run = nil
 
@@ -83,7 +103,6 @@ end
 function M.prefer_english(run, prefix)
   local p = prefs[run:lower()]
   if p then return p == "en" end
-  if ACRONYMS[run] then return true end
   if prefix == "" and M.last_kind() == "en" and (english.words[run] or #run == 1) then
     return true
   end
@@ -105,7 +124,7 @@ function M.split(input)
     if not run:match("%u") then pref = M.prefer_english(run, prefix) end
     if pref == false then return nil end
     if not run:match("%u") and not pref and not M.looks_english(run) and input ~= M.forced_input then return nil end
-    if prefix ~= "" and not prefix:match("[ 3467]$") then return nil end
+    if prefix ~= "" and not prefix:match(M.tone_end) then return nil end
     return prefix, run, false
   end
   local tail = input:match("[%d.]+$")
@@ -113,7 +132,7 @@ function M.split(input)
   for i = 1, #tail do
     local r = tail:sub(i)
     local p = input:sub(1, #input - #r)
-    if r:match("^%d") and (p == "" or p:match("[ 3467]$"))
+    if r:match("^%d") and (p == "" or p:match(M.tone_end))
         and M.looks_number(r, p == "" and input or nil) then
       return p, r, true
     end

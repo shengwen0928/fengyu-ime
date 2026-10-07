@@ -7,17 +7,6 @@ local function junk_chinese(input, first)
   return first.type == "sentence" or first._end < #input
 end
 
-local function taiwan_tai(text)
-  return (text:gsub("臺", "台"))
-end
-
-local function emit(cand)
-  if cand.text:find("臺", 1, true) then
-    yield(ShadowCandidate(cand, cand.type, taiwan_tai(cand.text), cand.comment))
-  end
-  yield(cand)
-end
-
 return function(input, env)
   local ctx = env.engine.context
   local prefix, run = mixed.split(ctx.input)
@@ -28,14 +17,14 @@ return function(input, env)
       mixed.forced_input = ctx.input
       return  -- 不給候選，組字區顯示原始字母
     end
-    if first then emit(first) end
-    for cand in input:iter() do emit(cand) end
+    if first then yield(first) end
+    for cand in input:iter() do yield(cand) end
     return
   end
   if prefix == "" then return end
   for cand in input:iter() do
     if cand._end == #prefix then
-      local text = taiwan_tai(cand.text) .. run
+      local text = cand.text .. run
       local c = Candidate("mixed", 0, #ctx.input, text, "")
       c.preedit = text
       yield(c)
