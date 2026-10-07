@@ -1,16 +1,21 @@
--- 風語輸入法：中英混打（候選字）
--- 仿華碩混打：結尾一段看起來是英文（或數字）時，組字區直接顯示原始字母，不跳注音候選
---   整段都是英文／數字 → 不給候選（組字區顯示原始字母）
---   前面有中文         → 只給一個「中文 + 英文／數字」的候選
+-- 風語輸入法：中英混打候選
 local mixed = require("fengyu_mixed")
 
--- 整段是 2～3 個沒有聲調的字母（如 gt、gth）時，看最佳候選：
--- 若只是把單字硬湊成句（type 為 sentence）或蓋不住整段，代表轉成中文也不成詞 → 改判英文
--- 整段都是數字（2 碼以上，如 100＝ㄅㄢ ㄢ→「班安」）時同理 → 改判數字
 local function junk_chinese(input, first)
   if not input:match("^%l%l%l?$") and not input:match("^%d[%d.]+$") then return false end
   if not first then return true end
   return first.type == "sentence" or first._end < #input
+end
+
+local function taiwan_tai(text)
+  return (text:gsub("臺", "台"))
+end
+
+local function emit(cand)
+  if cand.text:find("臺", 1, true) then
+    yield(ShadowCandidate(cand, cand.type, taiwan_tai(cand.text), cand.comment))
+  end
+  yield(cand)
 end
 
 return function(input, env)
@@ -23,14 +28,14 @@ return function(input, env)
       mixed.forced_input = ctx.input
       return  -- 不給候選，組字區顯示原始字母
     end
-    if first then yield(first) end
-    for cand in input:iter() do yield(cand) end
+    if first then emit(first) end
+    for cand in input:iter() do emit(cand) end
     return
   end
   if prefix == "" then return end
   for cand in input:iter() do
     if cand._end == #prefix then
-      local text = cand.text .. run
+      local text = taiwan_tai(cand.text) .. run
       local c = Candidate("mixed", 0, #ctx.input, text, "")
       c.preedit = text
       yield(c)
